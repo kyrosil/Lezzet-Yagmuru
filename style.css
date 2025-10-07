@@ -1,1 +1,82 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, #e61d2b, #0d3b66); /* Coca-Cola kırmızısı ve Carrefour mavisi */
+    color: #333;
+}
+
+.language-selector-container {
+    background-color: white;
+    padding: 40px 50px;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    width: 90%;
+    max-width: 600px;
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.language-selector-container.fade-out {
+    transform: scale(0.9);
+    opacity: 0;
+}
+
+
+h2 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+}
+
+p {
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.options-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.option {
+    border: 2px solid #ddd;
+    border-radius: 15px;
+    padding: 20px;
+    width: 150px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.option:hover {
+    transform: translateY(-5px);
+    border-color: #e61d2b;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.option img {
+    width: 80px;
+    border-radius: 5px;
+}
+
+.option span {
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+.hidden {
+    display: none;
+}
