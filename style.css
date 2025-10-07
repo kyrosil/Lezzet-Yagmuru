@@ -2,15 +2,16 @@
 
 * { box-sizing: border-box; }
 
+html { height: 100%; }
 body {
     font-family: 'Poppins', sans-serif;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    min-height: 100%;
     margin: 0;
+    padding-bottom: 50px; /* Footer için altta boşluk bırak */
     background: linear-gradient(135deg, #e61d2b, #0d3b66);
-    padding: 20px;
 }
 
 /* --- Dil Seçim Ekranı --- */
@@ -29,6 +30,8 @@ body {
 
 /* --- Üyelik/Giriş Ekranı --- */
 .auth-container { background-color: white; padding: 30px 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); width: 90%; max-width: 450px; text-align: center; }
+/* YENİ: Üyelik ekranındaki Kyrosil logosu için stil */
+.main-logo { max-height: 70px; margin-bottom: 15px; }
 #welcome-title { font-size: 1.5em; font-weight: 600; color: #333; margin-bottom: 20px; }
 .auth-tabs { display: flex; justify-content: center; gap: 20px; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
 .auth-tab { text-decoration: none; color: #888; font-weight: 600; font-size: 1.1em; padding: 5px 10px; transition: color 0.2s; }
@@ -44,7 +47,7 @@ form button:hover { background-color: #c01220; }
 .info-link { margin-top: 20px; }
 .info-link a { color: #0d3b66; text-decoration: none; font-weight: 600; font-size: 0.9em; }
 .sponsors-footer { margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px; display: flex; justify-content: space-around; align-items: center; }
-.sponsors-footer img { max-height: 30px; opacity: 0.7; transition: opacity 0.2s; }
+.sponsors-footer img { max-height: 35px; opacity: 0.8; transition: opacity 0.2s; } /* Sponsor logolarını biraz daha görünür yaptım */
 .sponsors-footer img:hover { opacity: 1; }
 .hidden { display: none !important; }
 
@@ -57,3 +60,17 @@ form button:hover { background-color: #c01220; }
 #modal-rewards-text li { background: #f9f9f9; border-left: 4px solid #0d3b66; margin-bottom: 10px; padding: 10px 15px; border-radius: 5px; }
 #modal-rewards-text li strong { color: #333; }
 #modal-claim-text a { color: #e61d2b; font-weight: bold; }
+
+/* YENİ: Her zaman görünecek sabit footer için stil */
+.persistent-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    font-size: 0.8em;
+    z-index: 1001; /* Her şeyin üstünde olmalı */
+}
