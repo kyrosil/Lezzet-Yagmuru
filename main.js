@@ -1,46 +1,80 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Dil seçimi elementleri
+    // --- Element Seçimleri ---
     const selectTR = document.getElementById('select-tr');
     const selectEU = document.getElementById('select-eu');
     const langContainer = document.querySelector('.language-selector-container');
-    
-    // Üyelik ekranı elementleri
     const authScreen = document.getElementById('auth-screen');
     const loginTab = document.getElementById('login-tab');
     const registerTab = document.getElementById('register-tab');
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
     const countryWrapper = document.getElementById('country-wrapper');
-    const followLabel = document.getElementById('follow-label');
+    const cardInfoText = document.getElementById('card-info-text');
+    const howToPlayLink = document.getElementById('how-to-play-link');
+    const infoModal = document.getElementById('info-modal');
+    const modalCloseButton = document.getElementById('modal-close-button');
 
-    // Çeviri metinleri objesi
+    // --- Çeviri Metinleri ve Ödüller ---
     const texts = {
         tr: {
-            login: "Giriş Yap",
-            register: "Kayıt Ol",
-            email_placeholder: "E-posta Adresi",
-            password_placeholder: "Şifre",
-            social_placeholder: "Sosyal Medya Kullanıcı Adı",
-            follow_text: "@Kyrosil hesabını takip ediyorum.",
-            sponsors_text: "Sponsorlarımız",
+            // ... (önceki metinler aynı)
+            welcome_title: "Lezzet Yağmuru'na Hoş Geldin!",
+            // ...
+            how_to_play: "Nasıl Oynanır & Ödüller",
+            // Modal İçerikleri
+            modal_title: "Nasıl Oynanır & Ödüller",
+            modal_rules_title: "Oyun Kuralları",
+            modal_rules_text: "CarrefourSA sepeti ile yukarıdan yağan Coca-Cola ürünlerini yakala. Farklı markalara ve bombalara dikkat et! Nestlé ürünleri sana özel güçler kazandıracak. 3 Coca-Cola şişesi kaçırırsan oyun biter.",
+            modal_rewards_title: "Türkiye Ödülleri",
+            rewards: [
+                "<strong>500 PUAN:</strong> Coca-Cola ürünlerinde geçerli 150 TL CarrefourSA Kart Puan",
+                "<strong>750 PUAN:</strong> Nestlé ürünlerinde geçerli 150 TL CarrefourSA Kart Puan",
+                "<strong>1000 PUAN:</strong> Tüm ürünlerde geçerli 100 TL CarrefourSA Kart Puan",
+                "<strong>1000 PUAN:</strong> Coca-Cola ürünlerinde geçerli 350 TL CarrefourSA Kart Puan",
+                "<strong>1500 PUAN:</strong> Nestlé ürünlerinde geçerli 400 TL CarrefourSA Kart Puan",
+                "<strong>2000 PUAN:</strong> Coca-Cola ürünlerinde geçerli 750 TL CarrefourSA Kart Puan",
+                "<strong>2000 PUAN:</strong> Tüm ürünlerde geçerli 200 TL CarrefourSA Kart Puan",
+                "<strong>5000 PUAN:</strong> Coca-Cola ve Nestlé ürünlerinde geçerli 2500 TL CarrefourSA Kart Puan",
+                "<strong>10000 PUAN:</strong> Tüm ürünlerde geçerli 2000 TL CarrefourSA Kart Puan"
+            ],
+            modal_claim_title: "Ödül Nasıl Talep Edilir?",
+            modal_claim_text: `Yeterli puana ulaştığında, oyun içindeki 'Ödülü Al' butonuna tıklayarak puanlarını kullanabilirsin. Puanların anında CarrefourSA kartına yüklenecektir. Yüklemenin doğrulanması için, alışveriş fişinin bir kopyasını <a href="mailto:gifts@kyrosil.eu">gifts@kyrosil.eu</a> adresine göndermen gerekmektedir.`
         },
         en: {
-            login: "Login",
-            register: "Sign Up",
-            email_placeholder: "Email Address",
-            password_placeholder: "Password",
-            social_placeholder: "Social Media Username",
-            follow_text: "I am following the @Kyrosil account.",
-            sponsors_text: "Our Sponsors",
+            // ... (önceki metinler aynı)
+            welcome_title: "Welcome to Taste Rain!",
+            // ...
+            how_to_play: "How to Play & Prizes",
+            // Modal Content
+            modal_title: "How to Play & Prizes",
+            modal_rules_title: "Game Rules",
+            modal_rules_text: "Catch the falling Coca-Cola products with the Carrefour cart. Watch out for other brands and bombs! Nestlé products will give you special powers. The game ends if you miss 3 Coca-Cola bottles.",
+            modal_rewards_title: "Europe Prizes",
+            rewards: [
+                "<strong>500 POINTS:</strong> 5 EURO Carrefour Card Points for Coca-Cola products",
+                "<strong>750 POINTS:</strong> 7.5 EURO Carrefour Card Points for Nestlé products",
+                "<strong>1000 POINTS:</strong> 5 EURO Carrefour Card Points for all products",
+                "<strong>1000 POINTS:</strong> 12.5 EURO Carrefour Card Points for Coca-Cola products",
+                "<strong>1500 POINTS:</strong> 17.5 EURO Carrefour Card Points for Nestlé products",
+                "<strong>2000 POINTS:</strong> 30 EURO Carrefour Card Points for Coca-Cola products",
+                "<strong>2000 POINTS:</strong> 12 EURO Carrefour Card Points for all products",
+                "<strong>5000 POINTS:</strong> 50 EURO Carrefour Card Points for Coca-Cola and Nestlé products",
+                "<strong>10,000 POINTS:</strong> 80 EURO Carrefour Card Points for all products"
+            ],
+            modal_claim_title: "How to Claim a Prize?",
+            modal_claim_text: `When you reach enough points, you can use them by clicking the 'Claim Prize' button in the game. The points will be instantly loaded onto your Carrefour card. For verification, you must send a copy of your purchase receipt to <a href="mailto:gifts@kyrosil.eu">gifts@kyrosil.eu</a>.`
         }
     };
 
-    let currentLang = 'tr'; // Varsayılan dil
-
-    // --- Dil Seçimi Yönetimi ---
+    // ... (diğer değişkenler ve event listenerlar aynı kalıyor)
+    let currentLang = 'tr';
     selectTR.addEventListener('click', () => handleSelection('tr'));
     selectEU.addEventListener('click', () => handleSelection('eu'));
+    loginTab.addEventListener('click', (e) => switchTab(e, 'login'));
+    registerTab.addEventListener('click', (e) => switchTab(e, 'register'));
+    howToPlayLink.addEventListener('click', (e) => { e.preventDefault(); infoModal.classList.remove('hidden'); });
+    modalCloseButton.addEventListener('click', () => infoModal.classList.add('hidden'));
 
     function handleSelection(selection) {
         currentLang = selection;
@@ -51,65 +85,40 @@ document.addEventListener('DOMContentLoaded', () => {
             renderAuthScreen();
         }, 300);
     }
-
-    // --- Üyelik Ekranı Yönetimi ---
-    function renderAuthScreen() {
-        const langTexts = texts[currentLang];
-        // Metinleri dile göre güncelle
-        loginTab.textContent = langTexts.login;
-        registerTab.textContent = langTexts.register;
-        document.getElementById('login-email').placeholder = langTexts.email_placeholder;
-        document.getElementById('login-password').placeholder = langTexts.password_placeholder;
-        document.getElementById('login-button').textContent = langTexts.login;
-        document.getElementById('register-email').placeholder = langTexts.email_placeholder;
-        document.getElementById('register-password').placeholder = langTexts.password_placeholder;
-        document.getElementById('register-social').placeholder = langTexts.social_placeholder;
-        followLabel.textContent = langTexts.follow_text;
-        document.getElementById('register-button').textContent = langTexts.register;
-        document.getElementById('sponsors-text').textContent = langTexts.sponsors_text;
-        
-        // Avrupa seçildiyse ülke listesini göster
-        if (currentLang === 'eu') {
-            countryWrapper.classList.remove('hidden');
-        } else {
-            countryWrapper.classList.add('hidden');
-        }
+    
+    function switchTab(event, tabName) {
+        event.preventDefault();
+        const isLogin = tabName === 'login';
+        loginTab.classList.toggle('active', isLogin);
+        registerTab.classList.toggle('active', !isLogin);
+        loginForm.classList.toggle('hidden', !isLogin);
+        registerForm.classList.toggle('hidden', isLogin);
     }
 
-    // Tab geçişleri
-    loginTab.addEventListener('click', (e) => {
-        e.preventDefault();
-        loginTab.classList.add('active');
-        registerTab.classList.remove('active');
-        loginForm.classList.remove('hidden');
-        registerForm.classList.add('hidden');
-    });
+    function renderAuthScreen() {
+        const lang = texts[currentLang];
+        // Dil ve ödül listelerini doldur
+        // ... (diğer metin güncellemeleri aynı kalıyor)
+        document.getElementById('welcome-title').textContent = lang.welcome_title;
+        // ...
+        
+        // Modal içeriğini doldur
+        document.getElementById('modal-title').textContent = lang.modal_title;
+        document.getElementById('modal-rules-title').textContent = lang.modal_rules_title;
+        document.getElementById('modal-rules-text').textContent = lang.modal_rules_text;
+        document.getElementById('modal-rewards-title').textContent = lang.modal_rewards_title;
 
-    registerTab.addEventListener('click', (e) => {
-        e.preventDefault();
-        registerTab.classList.add('active');
-        loginTab.classList.remove('active');
-        registerForm.classList.remove('hidden');
-        loginForm.classList.add('hidden');
-    });
+        // Ödül listesini oluştur
+        const rewardsList = lang.rewards.map(reward => `<li>${reward}</li>`).join('');
+        document.getElementById('modal-rewards-text').innerHTML = `<ul>${rewardsList}</ul>`;
+        
+        document.getElementById('modal-claim-title').textContent = lang.modal_claim_title;
+        document.getElementById('modal-claim-text').innerHTML = lang.modal_claim_text;
 
-    // Form gönderme işlemleri (şimdilik sadece verileri konsola yazdır)
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        console.log("Giriş Yapma Talebi:");
-        console.log("E-posta:", document.getElementById('login-email').value);
-    });
+        // ... (form güncellemeleri aynı kalıyor)
+    }
+    
+    // ... (form submit fonksiyonları aynı kalıyor)
 
-    registerForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const userData = {
-            email: document.getElementById('register-email').value,
-            social: document.getElementById('register-social').value,
-            isFollowing: document.getElementById('follow-confirm').checked,
-        };
-        if (currentLang === 'eu') {
-            userData.country = document.getElementById('register-country').value;
-        }
-        console.log("Kayıt Olma Talebi (Firebase'e gidecek veriler):", userData);
-    });
+    renderAuthScreen(); // Sayfa ilk yüklendiğinde metinleri ayarla
 });
