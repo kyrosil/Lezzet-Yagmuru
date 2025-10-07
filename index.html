@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lezzet Yağmuru - Hoş Geldiniz</title>
+    <title>Lezzet Yağmuru - Kyrosil</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="language-selector-container">
+        <img src="https://i0.wp.com/kyrosil.eu/wp-content/uploads/2025/04/adsiz-tasarim.png?fit=500%2C500&ssl=1" alt="Kyrosil Logo" class="main-logo-small">
         <h2>Konumunu Seç / Select Your Location</h2>
         <p>Lütfen devam etmek için bir bölge seçin.<br>Please select a region to continue.</p>
-        
         <div class="options-wrapper">
             <div class="option" id="select-tr">
                 <img src="https://flagcdn.com/w160/tr.png" alt="Türkiye Bayrağı">
@@ -25,7 +25,52 @@
     </div>
 
     <div id="auth-screen" class="hidden">
+        <div class="auth-container">
+            <img src="https://i0.wp.com/kyrosil.eu/wp-content/uploads/2025/04/adsiz-tasarim.png?fit=500%2C500&ssl=1" alt="Kyrosil Logo" class="main-logo">
+            
+            <div class="auth-tabs">
+                <a href="#" class="auth-tab active" id="login-tab">Giriş Yap</a>
+                <a href="#" class="auth-tab" id="register-tab">Kayıt Ol</a>
+            </div>
+
+            <form id="login-form">
+                <input type="email" id="login-email" placeholder="E-posta Adresi" required>
+                <input type="password" id="login-password" placeholder="Şifre" required>
+                <button type="submit" id="login-button">Giriş Yap</button>
+            </form>
+
+            <form id="register-form" class="hidden">
+                <input type="email" id="register-email" placeholder="E-posta Adresi" required>
+                <input type="password" id="register-password" placeholder="Şifre" required>
+                <input type="text" id="register-social" placeholder="Sosyal Medya Kullanıcı Adı" required>
+                <div class="follow-rule">
+                    <input type="checkbox" id="follow-confirm" required>
+                    <label for="follow-confirm" id="follow-label">@Kyrosil hesabını takip ediyorum.</label>
+                </div>
+                <div id="country-wrapper" class="hidden">
+                    <select id="register-country" required>
+                        <option value="" disabled selected>Ülke Seçin / Select Country</option>
+                        <option value="france">France</option>
+                        <option value="spain">Spain</option>
+                        <option value="italy">Italy</option>
+                        <option value="belgium">Belgium</option>
+                        <option value="poland">Poland</option>
+                        <option value="romania">Romania</option>
+                    </select>
+                </div>
+                <button type="submit" id="register-button">Kayıt Ol</button>
+            </form>
+
+            <div class="sponsors-footer">
+                <p id="sponsors-text">Sponsorlarımız</p>
+                <div class="sponsor-logos">
+                    <img src="https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-5.png?ssl=1" alt="Coca-Cola">
+                    <img src="https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-17.png?ssl=1" alt="Carrefour">
+                    <img src="https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-3.png?ssl=1" alt="Nestle">
+                </div>
+            </div>
         </div>
+    </div>
 
     <script src="main.js"></script>
 </body>
