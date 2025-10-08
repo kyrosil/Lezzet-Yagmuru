@@ -7,10 +7,10 @@ class GameScene extends Phaser.Scene {
         this.handleGameOver = data.handleGameOver;
         this.score = 0;
         this.lives = 3;
+        this.spawnRate = 1800;
         this.objectSpeed = 200;
-        this.playerSpeed = 600;
-        this.spawnRate = 1800; // ms cinsinden ilk düşme aralığı
-        this.nextSpawnTime = 0; // Bir sonraki objenin düşeceği zaman
+        this.playerSpeed = 600; // Bu artık kullanılmıyor ama dursun
+        this.nextSpawnTime = 0;
     }
 
     preload() {
@@ -45,17 +45,15 @@ class GameScene extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.powerups, this.collectPowerup, null, this);
         this.physics.add.overlap(this.player, this.bonusItems, this.collectBonusItem, null, this);
         
-        // Bonus zamanlayıcısı hala event ile çalışabilir, daha az kritik.
         this.bonusTimer = this.time.addEvent({ delay: Phaser.Math.Between(15000, 25000), callback: this.spawnBonus, callbackScope: this, loop: true });
 
         this.updateScoreDisplay();
         this.updateLivesDisplay();
         
+        // DÜZELTME: Sepet hareketi direkt pozisyon atamasıyla yapılıyor.
         this.input.on('pointermove', (pointer) => {
             if (this.lives > 0) {
-                 this.physics.moveTo(this.player, pointer.x, this.player.y, this.playerSpeed);
-            } else {
-                this.player.setVelocityX(0);
+                this.player.x = Phaser.Math.Clamp(pointer.x, 65, this.scale.width - 65);
             }
         });
     }
@@ -67,17 +65,10 @@ class GameScene extends Phaser.Scene {
         this.objectSpeed = 200 + (elapsedTime * 8);
         this.spawnRate = Math.max(300, 1800 - (elapsedTime * 50));
         
-        // YENİ VE GARANTİLİ OBJE DÜŞÜRME MANTIĞI
+        // DÜZELTME: Obje düşürme mantığı artık ana döngüde.
         if (time > this.nextSpawnTime) {
             this.spawnObject();
             this.nextSpawnTime = time + this.spawnRate;
-        }
-
-        if (this.player.body) {
-            const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.input.x, this.player.y);
-            if (distance < 4) {
-                this.player.setVelocityX(0);
-            }
         }
 
         this.checkOutOfBounds(this.goodItems, true);
@@ -87,6 +78,7 @@ class GameScene extends Phaser.Scene {
     }
     
     spawnObject() {
+        if (this.lives <= 0) return;
         const x = Phaser.Math.Between(50, this.scale.width - 50);
         const typeChance = Phaser.Math.FloatBetween(0, 1);
         let itemKey, group, width, height;
@@ -129,9 +121,18 @@ class GameScene extends Phaser.Scene {
     collectPowerup(player, item) {
         const key = item.texture.key;
         item.destroy();
-        if (key === 'erikli' && this.lives < 3) { this.lives++; this.updateLivesDisplay(); } 
-        else if (key === 'xpress') { this.playerSpeed = 1000; this.time.delayedCall(5000, () => { this.playerSpeed = 600; }, [], this); } 
-        else if (key === 'kitkat') { this.physics.world.timeScale = 0.5; this.time.delayedCall(3000, () => { this.physics.world.timeScale = 1; }, [], this); }
+
+        if (key === 'erikli' && this.lives < 3) {
+            this.lives++; this.updateLivesDisplay();
+        } else if (key === 'xpress') {
+            // Xpress, sepetin direkt pozisyonunu takip ettiği için artık sepeti değil, düşen objeleri yavaşlatmak daha mantıklı.
+            // Bu yüzden KitKat ile aynı etkiyi veriyoruz.
+            this.physics.world.timeScale = 0.5; // Her şeyi yavaşlat
+            this.time.delayedCall(3000, () => { this.physics.world.timeScale = 1; }, [], this); // 3 saniye sonra normale döndür
+        } else if (key === 'kitkat') {
+            this.physics.world.timeScale = 0.5;
+            this.time.delayedCall(3000, () => { this.physics.world.timeScale = 1; }, [], this);
+        }
     }
     
     loseLife() {
@@ -174,7 +175,7 @@ class GameScene extends Phaser.Scene {
     gameOver() {
         this.physics.pause();
         this.bonusTimer.destroy();
-        if(this.player) this.player.setTint(0xff0000).setVelocityX(0);
+        if(this.player) this.player.setTint(0xff0000);
         this.handleGameOver(this.score);
     }
 }
