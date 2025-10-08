@@ -54,6 +54,13 @@ form button:hover { background-color: #c01220; }
 .menu-button#rewards-market-button:hover { box-shadow: 0 6px 15px rgba(13, 59, 102, 0.4); }
 .menu-button.tertiary { background-color: #6c757d; }
 .menu-button.tertiary:hover { box-shadow: 0 6px 15px rgba(108, 117, 125, 0.4); }
+.promo-code-area { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
+.promo-code-area h4 { margin: 0 0 15px 0; color: #555; font-weight: 600; }
+.promo-input-wrapper { display: flex; gap: 10px; }
+#promo-code-input { flex-grow: 1; margin-bottom: 0; text-transform: uppercase; }
+#redeem-code-button { border: none; border-radius: 8px; background-color: #28a745; color: white; font-weight: 600; padding: 0 25px; cursor: pointer; transition: background-color 0.2s; }
+#redeem-code-button:hover { background-color: #218838; }
+#redeem-code-button:disabled { background-color: #ccc; cursor: not-allowed; }
 .menu-footer { margin-top: 30px; }
 .menu-footer a { color: #777; text-decoration: none; font-size: 0.9em; }
 .menu-footer a:hover { text-decoration: underline; }
