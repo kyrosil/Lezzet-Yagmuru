@@ -58,10 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const texts = {
         tr: {
-            carrefour_logo_url: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-16.png?ssl=1", lang_select_title: "Konumunu Seç", location_warning: "<strong>ÖNEMLİ:</strong> Ödüllerin doğru bir şekilde tanımlanabilmesi için lütfen yaşadığınız bölgeyi doğru seçiniz.", welcome_title: "Lezzet Yağmuru'na Hoş Geldin!", login: "Giriş Yap", register: "Kayıt Ol", email_placeholder: "E-posta Adresi", password_placeholder: "Şifre", social_placeholder: "Sosyal Medya Kullanıcı Adı", card_gsm_placeholder: "CarrefourSA Kart No / GSM No",
+            carrefour_logo_url: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-16.png?ssl=1", lang_select_title: "Konumunu Seç / Select Location", location_warning: "<strong>TR:</strong> Ödüllerin doğru tanımlanması için lütfen bölgenizi doğru seçiniz.<br><strong>EN:</strong> Please select your region correctly for prize eligibility.", welcome_title: "Lezzet Yağmuru'na Hoş Geldin!", login: "Giriş Yap", register: "Kayıt Ol", email_placeholder: "E-posta Adresi", password_placeholder: "Şifre", social_placeholder: "Sosyal Medya Kullanıcı Adı", card_gsm_placeholder: "CarrefourSA Kart No / GSM No",
             card_info: `Kartınız yok mu? <a href="https://www.carrefoursakart.com/" target="_blank">Hemen oluşturun!</a>`,
             follow_text: "@Kyrosil hesabını takip ediyorum.", how_to_play: "Nasıl Oynanır & Ödüller", modal_title: "Nasıl Oynanır & Ödüller", modal_rules_title: "Oyun Kuralları",
-            modal_rules_text: "CarrefourSA sepeti ile yukarıdan yağan Coca-Cola ürünlerini yakala. Farklı markalara ve bombalara dikkat et! Nestlé ürünleri sana özel güçler kazandıracak. 3 Coca-Cola şişesi kaçırırsan oyun biter.",
+            modal_rules_text: "CarrefourSA sepeti ile yukarıdan yağan Coca-Cola ürünlerini yakala. Farklı markalara ve bombalara dikkat et! Nestlé ürünleri sana özel güçler kazandıracak. 3 iyi objeyi kaçırırsan veya 3 kötü objeyi yakalarsan oyun biter.",
             modal_rewards_title: "Türkiye Ödülleri", rewards: rewardsData.tr.map(r => `<strong>${r.points} PUAN:</strong> ${r.description}`),
             modal_claim_title: "Ödül Nasıl Talep Edilir?", modal_claim_text: `Ödül Marketi'ndeki 'Satın Al' butonuna tıklayarak puanlarını kullanabilir ve talebini bize e-posta ile bildirebilirsin.`,
             register_success: "Kayıt başarılı! Lütfen e-posta kutunuzu kontrol ederek hesabınızı doğrulayın.", login_success: "Giriş başarılı!", login_unverified: "Lütfen önce e-postanızı onaylayın.", login_fail: "Giriş başarısız oldu. Bilgilerinizi kontrol edin.",
@@ -72,19 +72,16 @@ document.addEventListener('DOMContentLoaded', () => {
             no_more_tries: "Bugünkü oyun hakkın bitti! Yarın tekrar oyna.", game_over_title: "Oyun Bitti!", final_score_text: "Kazandığın Puan:", return_to_menu_button: "Ana Menü'ye Dön",
             instructions_title: "Nasıl Oynanır?", im_ready_button: "Hazırım, Başla!",
             instructions: [
-                {img: "normal.png", text: "Coca-Cola ürünlerini yakala: <strong>+5 Puan</strong>"},
-                {img: "carrefour.png", text: "Nadir Carrefour logolarını yakala: <strong>+30 Puan</strong>"},
-                {img: "pepsi.png", text: "Rakip ürünleri ve bombaları yakalama: <strong>-5 Puan & 1 Can Kaybı</strong>"},
-                {img: "normal.png", text: "İyi objeleri kaçırma: <strong>1 Can Kaybı</strong>"},
-                {img: "kitkat.png", text: "KitKat / Xpress yakala: <strong>Oyun 3 saniyeliğine yavaşlar.</strong>"},
-                {img: "erikli.png", text: "Erikli yakala: <strong>1 Can kazanırsın.</strong>"},
+                {img: "normal.png", text: "Coca-Cola ürünlerini yakala: <strong>+5 Puan</strong>"}, {img: "carrefour.png", text: "Nadir Carrefour logolarını yakala: <strong>+30 Puan</strong>"},
+                {img: "pepsi.png", text: "Rakip ürünleri ve bombaları YAKALAMA: <strong>-5 Puan & 1 Can Kaybı</strong>"}, {img: "normal.png", text: "İyi objeleri KAÇIRMA: <strong>1 Can Kaybı</strong>"},
+                {img: "kitkat.png", text: "KitKat / Xpress yakala: <strong>Oyun 3 saniyeliğine yavaşlar.</strong>"}, {img: "erikli.png", text: "Erikli yakala: <strong>1 Can kazanırsın.</strong>"},
             ]
         },
         en: {
-            carrefour_logo_url: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-17.png?ssl=1", lang_select_title: "Select Your Location", location_warning: "<strong>IMPORTANT:</strong> To ensure correct prize allocation, please select the region you live in.", welcome_title: "Welcome to Taste Rain!", login: "Login", register: "Sign Up", email_placeholder: "Email Address", password_placeholder: "Password", social_placeholder: "Social Media Username", card_gsm_placeholder: "Carrefour Card No / Mobile No",
+            carrefour_logo_url: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-17.png?ssl=1", lang_select_title: "Konumunu Seç / Select Location", location_warning: "<strong>TR:</strong> Ödüllerin doğru tanımlanması için lütfen bölgenizi doğru seçiniz.<br><strong>EN:</strong> Please select your region correctly for prize eligibility.", welcome_title: "Welcome to Taste Rain!", login: "Login", register: "Sign Up", email_placeholder: "Email Address", password_placeholder: "Password", social_placeholder: "Social Media Username", card_gsm_placeholder: "Carrefour Card No / Mobile No",
             card_info: "If you don't have a card, enter your mobile number. You will need to create a card in-store to claim your prize.",
             follow_text: "I am following the @Kyrosil account.", how_to_play: "How to Play & Prizes", modal_title: "How to Play & Prizes", modal_rules_title: "Game Rules",
-            modal_rules_text: "Catch the falling Coca-Cola products with the Carrefour cart. Watch out for other brands and bombs! Nestlé products will give you special powers. The game ends if you miss 3 Coca-Cola bottles.",
+            modal_rules_text: "Catch the falling Coca-Cola products with the Carrefour cart. Watch out for other brands and bombs! Nestlé products will give you special powers. The game ends if you miss 3 good items or catch 3 bad items.",
             modal_rewards_title: "Europe Prizes", rewards: rewardsData.en.map(r => `<strong>${r.points} PTS:</strong> ${r.description}`),
             modal_claim_title: "How to Claim a Prize?", modal_claim_text: `You can use your points by clicking the 'Purchase' button in the Rewards Market and notify us of your claim via email.`,
             register_success: "Registration successful! Please check your email inbox to verify your account.", login_success: "Login successful!", login_unverified: "Please verify your email before logging in.", login_fail: "Login failed. Please check your credentials.",
@@ -95,12 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
             no_more_tries: "You are out of tries for today! Come back tomorrow.", game_over_title: "Game Over!", final_score_text: "Your Score:", return_to_menu_button: "Return to Main Menu",
             instructions_title: "How to Play?", im_ready_button: "I'm Ready, Start!",
             instructions: [
-                {img: "normal.png", text: "Catch Coca-Cola products: <strong>+5 Points</strong>"},
-                {img: "carrefour.png", text: "Catch rare Carrefour logos: <strong>+30 Points</strong>"},
-                {img: "pepsi.png", text: "Don't catch rival products and bombs: <strong>-5 Points & Lose 1 Life</strong>"},
-                {img: "normal.png", text: "Don't miss good items: <strong>Lose 1 Life</strong>"},
-                {img: "kitkat.png", text: "Catch KitKat / Xpress: <strong>Slows down the game for 3 seconds.</strong>"},
-                {img: "erikli.png", text: "Catch Erikli: <strong>Gain 1 Life.</strong>"},
+                {img: "normal.png", text: "Catch Coca-Cola products: <strong>+5 Points</strong>"}, {img: "carrefour.png", text: "Catch rare Carrefour logos: <strong>+30 Points</strong>"},
+                {img: "pepsi.png", text: "Don't catch rival products or bombs: <strong>-5 Points & Lose 1 Life</strong>"}, {img: "normal.png", text: "Don't miss good items: <strong>Lose 1 Life</strong>"},
+                {img: "kitkat.png", text: "Catch KitKat / Xpress: <strong>Slows down the game for 3 seconds.</strong>"}, {img: "erikli.png", text: "Catch Erikli: <strong>Gain 1 Life.</strong>"},
             ]
         }
     };
@@ -273,7 +267,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- Olay Yöneticileri ---
     selectTR.addEventListener('click', () => handleSelection('tr'));
     selectEU.addEventListener('click', () => handleSelection('en'));
     loginTab.addEventListener('click', (e) => switchTab(e, 'login'));
@@ -293,7 +286,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const triesLeft = await updateDailyTries(userDocRef);
         currentUserData.dailyTriesLeft = triesLeft;
         document.getElementById('user-tries').textContent = triesLeft;
-
         if (triesLeft > 0) {
             const instructionsList = document.getElementById('instructions-list');
             const baseURL = window.location.href.includes('github.io') ? 'https://kyrosil.github.io/Lezzet-Yagmuru/' : '';
