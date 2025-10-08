@@ -114,37 +114,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return triesLeft;
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const status = urlParams.get('status');
-    
-    if (status === 'registered') {
-        const lang = urlParams.get('lang') || 'tr';
-        currentLang = lang;
-        showScreen('auth');
-        switchTab({preventDefault: () => {}}, 'login');
-        updateTexts(currentLang);
-        showNotification(texts[currentLang].register_success, 'success');
-        history.replaceState(null, '', window.location.pathname);
-    } else {
-        onAuthStateChanged(auth, async (user) => {
-            if (user && user.emailVerified) {
-                const userDocRef = doc(db, 'users', user.uid);
-                const triesLeft = await updateDailyTries(userDocRef);
-                const userDocSnap = await getDoc(userDocRef);
-                if (userDocSnap.exists()) {
-                    currentUserData = { uid: user.uid, email: user.email, ...userDocSnap.data(), dailyTriesLeft: triesLeft };
-                    currentLang = currentUserData.region || 'tr';
-                    updateTexts(currentLang);
-                    showScreen('mainMenu');
-                    document.getElementById('user-email-display').textContent = currentUserData.email;
-                    document.getElementById('user-points').textContent = currentUserData.points || 0;
-                    document.getElementById('user-tries').textContent = currentUserData.dailyTriesLeft;
-                } else { signOut(auth); }
-            } else {
-                showScreen('langSelect');
-            }
-        });
-    }
+    onAuthStateChanged(auth, async (user) => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('status') === 'registered') return; // Kayıt sonrası yönlendirmeyi bekle
+
+        if (user && user.emailVerified) {
+            const userDocRef = doc(db, 'users', user.uid);
+            const triesLeft = await updateDailyTries(userDocRef);
+            const userDocSnap = await getDoc(userDocRef);
+            if (userDocSnap.exists()) {
+                currentUserData = { uid: user.uid, email: user.email, ...userDocSnap.data(), dailyTriesLeft: triesLeft };
+                currentLang = currentUserData.region || 'tr';
+                updateTexts(currentLang);
+                showScreen('mainMenu');
+                document.getElementById('user-email-display').textContent = currentUserData.email;
+                document.getElementById('user-points').textContent = currentUserData.points || 0;
+                document.getElementById('user-tries').textContent = currentUserData.dailyTriesLeft;
+            } else { signOut(auth); }
+        } else {
+            showScreen('langSelect');
+        }
+    });
 
     function showScreen(screenNameKey) { Object.values(screens).forEach(screen => { if (screen) screen.classList.add('hidden'); }); if (screens[screenNameKey]) screens[screenNameKey].classList.remove('hidden'); }
     function showNotification(message, type = 'error', target = notificationMessage) { target.innerHTML = message; target.className = `notification ${type}`; setTimeout(() => { target.className = 'notification hidden'; }, 10000); }
@@ -212,10 +202,70 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.classList.toggle('hidden', !isLogin); registerForm.classList.toggle('hidden', isLogin);
     }
     
-    function renderRewardsMarket() { /* ... */ }
-    async function handlePurchase(event) { /* ... */ }
-    async function renderMyPurchases() { /* ... */ }
-    async function handleGameOver(finalScore) { /* ... */ }
+    function renderRewardsMarket() {
+        const rewardsListEl = document.getElementById('rewards-list'); rewardsListEl.innerHTML = '';
+        const langRewards = rewardsData[currentLang] || [];
+        langRewards.forEach(reward => {
+            const canAfford = currentUserData.points >= reward.points;
+            const card = document.createElement('div');
+            card.className = 'reward-card';
+            card.innerHTML = `<img src="${reward.logo}" alt="${reward.brand}" class="reward-logo"><p class="reward-description">${reward.description}</p><div class="reward-points">${reward.points} ${texts[currentLang].points_label}</div><button class="claim-button" data-reward-id="${reward.id}" ${canAfford ? '' : 'disabled'}>${canAfford ? texts[currentLang].claim_button : texts[currentLang].insufficient_points}</button>`;
+            rewardsListEl.appendChild(card);
+        });
+        rewardsListEl.querySelectorAll('.claim-button:not([disabled])').forEach(button => { button.addEventListener('click', handlePurchase); });
+    }
+
+    async function handlePurchase(event) {
+        const rewardId = event.target.dataset.rewardId;
+        const reward = (rewardsData[currentLang] || []).find(r => r.id === rewardId);
+        if (!reward || currentUserData.points < reward.points) { showNotification(texts[currentLang].purchase_fail, 'error', marketNotification); return; }
+        if (confirm(`${reward.points} ${texts[currentLang].points_label} kullanarak bu ödülü almak istediğinizden emin misiniz?`)) {
+            const userDocRef = doc(db, 'users', currentUserData.uid);
+            const claimsColRef = collection(userDocRef, 'claims');
+            try {
+                const newClaimRef = await addDoc(claimsColRef, { rewardId: reward.id, rewardDescription: reward.description, pointsSpent: reward.points, status: 'inceleniyor', claimedAt: serverTimestamp() });
+                await updateDoc(userDocRef, { points: increment(-reward.points) });
+                currentUserData.points -= reward.points;
+                document.getElementById('user-points').textContent = currentUserData.points;
+                document.getElementById('market-user-points').textContent = currentUserData.points;
+                renderRewardsMarket();
+                const mailSubject = encodeURIComponent(`Ödül Talebi: ${reward.description} (#${newClaimRef.id.substring(0,6)})`);
+                const mailBody = encodeURIComponent(`Kullanıcı ID: ${currentUserData.uid}\nKullanıcı E-posta: ${currentUserData.email}\n\nTalep Edilen Ödül:\n- ID: ${newClaimRef.id}\n- Açıklama: ${reward.description}\n- Puan Değeri: ${reward.points}\n\nLütfen bu ödülü Carrefour kartıma/GSM numarama tanımlayın:\n- Kart/GSM No: ${currentUserData.card_gsm}`);
+                const mailtoLink = `mailto:gifts@kyrosil.eu?subject=${mailSubject}&body=${mailBody}`;
+                const successMessage = `${texts[currentLang].purchase_success_part1} <a href="${mailtoLink}" target="_blank">${texts[currentLang].purchase_success_part2}</a>`;
+                showNotification(successMessage, 'success', marketNotification);
+            } catch (error) { console.error("Satın alım hatası:", error); showNotification("Bir hata oluştu.", 'error', marketNotification); }
+        }
+    }
+    
+    async function renderMyPurchases() {
+        const purchasesListEl = document.getElementById('purchases-list');
+        purchasesListEl.innerHTML = `<p>${texts[currentLang].loading || 'Yükleniyor...'}</p>`;
+        const claimsRef = collection(db, 'users', currentUserData.uid, 'claims');
+        const q = query(claimsRef, orderBy('claimedAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) { purchasesListEl.innerHTML = `<p>${texts[currentLang].no_purchases}</p>`; return; }
+        purchasesListEl.innerHTML = '';
+        querySnapshot.forEach((doc) => {
+            const claim = doc.data();
+            const claimDate = claim.claimedAt ? claim.claimedAt.toDate().toLocaleDateString() : '';
+            const statusText = texts[currentLang][claim.status] || claim.status;
+            const item = document.createElement('div');
+            item.className = 'purchase-item';
+            item.innerHTML = `<div class="purchase-details"><span class="purchase-description">${claim.rewardDescription}</span><span class="purchase-date">${claimDate}</span></div><div class="purchase-status ${claim.status === 'tanımlandı' ? 'completed' : 'review'}">${statusText}</div>`;
+            purchasesListEl.appendChild(item);
+        });
+    }
+
+    async function handleGameOver(finalScore) {
+        document.getElementById('final-score').textContent = finalScore;
+        document.getElementById('game-over-screen').classList.remove('hidden');
+        if (finalScore > 0) {
+            const userDocRef = doc(db, 'users', currentUserData.uid);
+            await updateDoc(userDocRef, { points: increment(finalScore) });
+            currentUserData.points += finalScore;
+        }
+    }
 
     selectTR.addEventListener('click', () => handleSelection('tr'));
     selectEU.addEventListener('click', () => handleSelection('en'));
@@ -281,7 +331,39 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     resetPasswordForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('reset-email').value; sendPasswordResetEmail(auth, email).then(() => { resetPasswordModal.classList.add('hidden'); showNotification(texts[currentLang].reset_email_sent, 'success'); }).catch((error) => { showNotification(error.message, 'error'); }); });
     
-    redeemCodeButton.addEventListener('click', async () => { /* ... */ });
+    redeemCodeButton.addEventListener('click', async () => {
+        const code = promoCodeInput.value.trim().toUpperCase();
+        if (!code) return;
+        redeemCodeButton.disabled = true;
+        redeemCodeButton.textContent = '...';
+        try {
+            const redeemPromoCode = httpsCallable(functions, 'redeemPromoCode');
+            const result = await redeemPromoCode({ code: code });
+            showNotification(result.data.message, 'success');
+            currentUserData.points += result.data.pointsAdded;
+            document.getElementById('user-points').textContent = currentUserData.points;
+            promoCodeInput.value = '';
+        } catch (error) {
+            console.error("Promo kod hatası:", error);
+            showNotification(error.message, 'error');
+        } finally {
+            redeemCodeButton.disabled = false;
+            redeemCodeButton.textContent = texts[currentLang].redeem_button;
+        }
+    });
 
-    // Sayfa Yüklendiğinde URL'i kontrol etme mantığı burada zaten var
+    // Sayfa Yüklendiğinde URL'i kontrol et
+    const initialUrlParams = new URLSearchParams(window.location.search);
+    const initialStatus = initialUrlParams.get('status');
+    if (initialStatus === 'registered') {
+        const lang = initialUrlParams.get('lang') || 'tr';
+        currentLang = lang;
+        showScreen('auth');
+        switchTab({preventDefault: () => {}}, 'login');
+        updateTexts(currentLang);
+        showNotification(texts[currentLang].register_success, 'success');
+        history.replaceState(null, '', window.location.pathname);
+    }
+
+    updateTexts(currentLang);
 });
