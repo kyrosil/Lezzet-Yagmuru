@@ -8,7 +8,6 @@
 </head>
 <body>
     <div id="app">
-        <!-- ADIM 1: DİL SEÇİM EKRANI -->
         <div class="language-selector-container">
             <img src="https://i0.wp.com/kyrosil.eu/wp-content/uploads/2025/04/adsiz-tasarim.png?fit=500%2C500&ssl=1" alt="Kyrosil Logo" class="main-logo-small">
             <h2 id="lang-select-title"></h2>
@@ -27,11 +26,13 @@
             </div>
         </div>
 
-        <!-- ADIM 2: ÜYELİK/GİRİŞ EKRANI (Başlangıçta gizli) -->
         <div id="auth-screen" class="hidden">
             <div class="auth-container">
                 <img src="https://i0.wp.com/kyrosil.eu/wp-content/uploads/2025/04/adsiz-tasarim.png?fit=500%2C500&ssl=1" alt="Kyrosil Logo" class="main-logo">
                 <h2 id="welcome-title"></h2>
+                
+                <div id="notification-message" class="notification hidden"></div>
+
                 <div class="auth-tabs">
                     <a href="#" class="auth-tab active" id="login-tab"></a>
                     <a href="#" class="auth-tab" id="register-tab"></a>
@@ -70,7 +71,6 @@
             </div>
         </div>
         
-        <!-- OYUN BİLGİLERİ VE ÖDÜLLER MODALI -->
         <div id="info-modal" class="modal-overlay hidden">
             <div class="modal-content">
                 <button class="modal-close" id="modal-close-button">&times;</button>
@@ -89,7 +89,6 @@
         © 2025 Kyrosil. All Rights Reserved.
     </footer>
 
-    <!-- YENİ ve GÜNCEL KOD: Firebase script'lerini module olarak çağırıyoruz -->
     <script type="module" src="main.js"></script>
 
 </body>
