@@ -31,8 +31,8 @@ export function createGame(handleGameOver) {
     let player, gameTimer;
     let score = 0;
     let lives = 3;
-    let spawnRate = 1800; // Zorluk artırıldı: Başlangıç hızı düşürüldü
-    let objectSpeed = 200; // Zorluk artırıldı: Başlangıç hızı artırıldı
+    let spawnRate = 1800;
+    let objectSpeed = 200;
     let sceneContext;
 
     const ASSETS = {
@@ -56,7 +56,6 @@ export function createGame(handleGameOver) {
     const POWERUPS = ['kitkat', 'xpress', 'erikli'];
 
     function preload() {
-        // DÜZELTME: Repo adın "Lezzet-Yagmuru" olarak güncellendi.
         if (window.location.href.includes('github.io')) {
             this.load.setBaseURL('https://kyrosil.github.io/Lezzet-Yagmuru/');
         }
@@ -68,7 +67,7 @@ export function createGame(handleGameOver) {
 
     function create() {
         sceneContext = this;
-        player = this.physics.add.sprite(400, 550, 'basket').setDisplaySize(120, 100).setCollideWorldBounds(true);
+        player = this.physics.add.sprite(400, 550, 'basket').setDisplaySize(130, 110).setCollideWorldBounds(true); // Sepet de biraz büyüdü
         player.body.immovable = true;
         
         this.goodItems = this.physics.add.group();
@@ -89,7 +88,7 @@ export function createGame(handleGameOver) {
         
         this.input.on('pointermove', (pointer) => {
             if (lives > 0) {
-                 player.x = Phaser.Math.Clamp(pointer.x, 60, this.physics.world.bounds.width - 60);
+                 player.x = Phaser.Math.Clamp(pointer.x, 65, this.physics.world.bounds.width - 65);
             }
         });
     }
@@ -97,10 +96,9 @@ export function createGame(handleGameOver) {
     function update() {
         if (lives <= 0) return;
         
-        // ZORLUK AYARI GÜNCELLENDİ
         const elapsedTime = this.time.now / 1000;
-        objectSpeed = 200 + (elapsedTime * 8); // Hız artık daha çabuk artıyor
-        spawnRate = Math.max(300, 1800 - (elapsedTime * 50)); // Objeler daha sık düşüyor
+        objectSpeed = 200 + (elapsedTime * 8);
+        spawnRate = Math.max(300, 1800 - (elapsedTime * 50));
         gameTimer.delay = spawnRate;
 
         checkOutOfBounds(this.goodItems, true);
@@ -115,23 +113,25 @@ export function createGame(handleGameOver) {
         const typeChance = Phaser.Math.FloatBetween(0, 1);
         let itemKey, group, width, height;
 
-        // ZORLUK AYARI GÜNCELLENDİ: Kötü obje düşme ihtimali arttı
-        if (typeChance < 0.55) { // %55 ihtimalle iyi obje
+        if (typeChance < 0.55) { 
             itemKey = Phaser.Utils.Array.GetRandom(GOOD_ITEMS); 
             group = sceneContext.goodItems;
-            width = 50; height = 70;
-        } else if (typeChance < 0.85) { // %30 ihtimalle kötü obje
+            // YENİ BOYUTLAR
+            width = 65; height = 85; 
+        } else if (typeChance < 0.85) { 
             itemKey = Phaser.Utils.Array.GetRandom(BAD_ITEMS); 
             group = sceneContext.badItems;
-            width = 60; height = 60;
-        } else { // %15 ihtimalle power-up
+            // YENİ BOYUTLAR
+            width = 75; height = 75; 
+        } else { 
             itemKey = Phaser.Utils.Array.GetRandom(POWERUPS); 
             group = sceneContext.powerups;
-            width = 50; height = 50;
+            // YENİ BOYUTLAR
+            width = 60; height = 60; 
         }
         
-        // DÜZELTME: Başlangıç pozisyonu ekranın daha da üstü yapıldı (-100)
-        const item = group.create(x, -100, itemKey);
+        // YENİ: Başlangıç pozisyonu daha da yukarı alındı (-150)
+        const item = group.create(x, -150, itemKey);
         if (item) {
             item.setDisplaySize(width, height);
             item.setVelocityY(objectSpeed);
@@ -142,10 +142,11 @@ export function createGame(handleGameOver) {
     function spawnBonus() {
         if (lives <= 0 || !sceneContext) return;
         const x = Phaser.Math.Between(50, 750);
-        // DÜZELTME: Başlangıç pozisyonu ekranın daha da üstü yapıldı (-100)
-        const bonus = sceneContext.bonusItems.create(x, -100, 'carrefour');
+        // YENİ: Başlangıç pozisyonu daha da yukarı alındı (-150)
+        const bonus = sceneContext.bonusItems.create(x, -150, 'carrefour');
         if (bonus) {
-            bonus.setDisplaySize(70, 70);
+            // YENİ BOYUT
+            bonus.setDisplaySize(80, 80);
             bonus.setVelocityY(objectSpeed * 2.5);
         }
     }
@@ -170,7 +171,7 @@ export function createGame(handleGameOver) {
     function checkOutOfBounds(group, isGood) {
         if (!group || !sceneContext) return;
         group.children.each(item => {
-            if (item && item.y > sceneContext.physics.world.bounds.height + 50) {
+            if (item && item.y > sceneContext.physics.world.bounds.height + 100) { // Sınırı biraz daha genişlettim
                 if (isGood) loseLife();
                 item.destroy();
             }
