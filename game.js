@@ -1,17 +1,18 @@
 // Bu, game.js dosyasının içeriğidir.
-// KOD, TÜM HATALARI GİDERMEK İÇİN YENİDEN YAPILANDIRILDI.
+// KOD, TÜM HATALARI GİDERMEK VE OYUNU DENGELEMEK İÇİN YENİDEN YAPILANDIRILDI.
+
 class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: 'GameScene' });
     }
 
-    // Oyun her başladığında çağrılan ve değişkenleri sıfırlayan fonksiyon
+    // Oyun her başladığında çağrılan ve tüm değişkenleri sıfırlayan fonksiyon
     init(data) {
         this.handleGameOver = data.handleGameOver;
         this.score = 0;
         this.lives = 3;
-        this.spawnRate = 1800; // Zorluk sıfırlandı
-        this.objectSpeed = 200; // Zorluk sıfırlandı
+        this.spawnRate = 1800; // Başlangıç zorluğu sıfırlandı
+        this.objectSpeed = 200; // Başlangıç zorluğu sıfırlandı
     }
 
     preload() {
@@ -22,7 +23,7 @@ class GameScene extends Phaser.Scene {
             'coke_light': 'light.png',
             'fanta': 'fanta.png',
             'sprite': 'sprite.png',
-            'cappy': 'cappy.png',
+            'cappy': 'https://i.imgur.com/832gT26.png', // Arka planı transparan yeni Cappy linki
             'pepsi': 'pepsi.png',
             'bomb': 'bomb.png',
             'kitkat': 'kitkat.png',
@@ -41,7 +42,7 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
-        this.player = this.physics.add.sprite(400, 550, 'basket').setDisplaySize(130, 110).setCollideWorldBounds(true);
+        this.player = this.physics.add.sprite(this.scale.width / 2, this.scale.height - 50, 'basket').setDisplaySize(130, 110).setCollideWorldBounds(true);
         this.player.body.immovable = true;
         
         this.goodItems = this.physics.add.group();
@@ -62,7 +63,7 @@ class GameScene extends Phaser.Scene {
         
         this.input.on('pointermove', (pointer) => {
             if (this.lives > 0) {
-                 this.player.x = Phaser.Math.Clamp(pointer.x, 65, this.physics.world.bounds.width - 65);
+                 this.player.x = Phaser.Math.Clamp(pointer.x, 65, this.scale.width - 65);
             }
         });
     }
@@ -83,8 +84,8 @@ class GameScene extends Phaser.Scene {
     
     spawnObject() {
         if (this.lives <= 0) return;
-        const x = Phaser.Math.Between(50, 750);
-        // ZORLUK DENGELENDİ: Kötü obje düşme ihtimali azaltıldı
+        const x = Phaser.Math.Between(50, this.scale.width - 50);
+        // ZORLUK DENGELENDİ
         const typeChance = Phaser.Math.FloatBetween(0, 1);
         let itemKey, group, width, height;
 
@@ -113,7 +114,7 @@ class GameScene extends Phaser.Scene {
     
     spawnBonus() {
         if (this.lives <= 0) return;
-        const x = Phaser.Math.Between(50, 750);
+        const x = Phaser.Math.Between(50, this.scale.width - 50);
         const bonus = this.bonusItems.create(x, -100, 'carrefour');
         if (bonus) {
             bonus.setDisplaySize(90, 90);
@@ -141,7 +142,7 @@ class GameScene extends Phaser.Scene {
     checkOutOfBounds(group, isGood) {
         if (!group) return;
         group.children.each(item => {
-            if (item && item.y > this.physics.world.bounds.height + 100) {
+            if (item && item.y > this.scale.height + 100) {
                 if (isGood) this.loseLife();
                 item.destroy();
             }
