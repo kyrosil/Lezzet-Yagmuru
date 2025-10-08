@@ -101,3 +101,21 @@ form button:hover { background-color: #c01220; }
 #modal-rewards-text li strong { color: #333; }
 #modal-claim-text a { color: #e61d2b; font-weight: bold; }
 .persistent-footer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: rgba(0, 0, 0, 0.5); color: white; text-align: center; padding: 10px 0; font-size: 0.8em; z-index: 1001; }
+
+/* style.css dosyasının en sonuna ekle */
+
+.form-extra-links {
+    display: flex;
+    justify-content: flex-end; /* Linki sağa yaslar */
+    margin-bottom: 15px;
+    font-size: 0.9em;
+}
+
+.form-extra-links a {
+    color: #555;
+    text-decoration: none;
+}
+
+.form-extra-links a:hover {
+    text-decoration: underline;
+}
