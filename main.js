@@ -50,7 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const purchasesBackButton = document.getElementById('purchases-back-button');
     const promoCodeInput = document.getElementById('promo-code-input');
     const redeemCodeButton = document.getElementById('redeem-code-button');
-
+    
     const texts = {
         tr: {
             carrefour_logo_url: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-16.png?ssl=1", lang_select_title: "Konumunu Seç", location_warning: "<strong>ÖNEMLİ:</strong> Ödüllerin doğru bir şekilde tanımlanabilmesi için lütfen yaşadığınız bölgeyi doğru seçiniz.", welcome_title: "Lezzet Yağmuru'na Hoş Geldin!", login: "Giriş Yap", register: "Kayıt Ol", email_placeholder: "E-posta Adresi", password_placeholder: "Şifre", social_placeholder: "Sosyal Medya Kullanıcı Adı", card_gsm_placeholder: "CarrefourSA Kart No / GSM No",
@@ -66,7 +66,17 @@ document.addEventListener('DOMContentLoaded', () => {
             purchases_title: "Satın Alımlarım", no_purchases: "Henüz bir satın alım yapmadınız.", inceleniyor: "İnceleniyor", tanımlandı: "Tanımlandı", loading: "Yükleniyor...", promo_title: "Promosyon Kodu", redeem_button: "Kullan"
         },
         en: {
-            // ... (İngilizce metinler de benzer şekilde güncellendi)
+            carrefour_logo_url: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-17.png?ssl=1", lang_select_title: "Select Your Location", location_warning: "<strong>IMPORTANT:</strong> To ensure correct prize allocation, please select the region you live in.", welcome_title: "Welcome to Taste Rain!", login: "Login", register: "Sign Up", email_placeholder: "Email Address", password_placeholder: "Password", social_placeholder: "Social Media Username", card_gsm_placeholder: "Carrefour Card No / Mobile No",
+            card_info: "If you don't have a card, enter your mobile number. You will need to create a card in-store to claim your prize.",
+            follow_text: "I am following the @Kyrosil account.", how_to_play: "How to Play & Prizes", modal_title: "How to Play & Prizes", modal_rules_title: "Game Rules",
+            modal_rules_text: "Catch the falling Coca-Cola products with the Carrefour cart. Watch out for other brands and bombs! Nestlé products will give you special powers. The game ends if you miss 3 Coca-Cola bottles.",
+            modal_rewards_title: "Europe Prizes", rewards: rewardsData.en.map(r => `<strong>${r.points} PTS:</strong> ${r.description}`),
+            modal_claim_title: "How to Claim a Prize?", modal_claim_text: `You can use your points by clicking the 'Purchase' button in the Rewards Market and notify us of your claim via email.`,
+            register_success: "Registration successful! Please check your email inbox to verify your account.", login_success: "Login successful!", login_unverified: "Please verify your email before logging in.", login_fail: "Login failed. Please check your credentials.",
+            forgot_password: "Forgot Password?", reset_modal_title: "Reset Password", reset_modal_text: "Enter your registered email address. We will send you a link to reset your password.", reset_button: "Send Reset Link", reset_email_sent: "Password reset email sent. Please check your inbox.",
+            menu_welcome_title: "Welcome", points_label: "POINTS", start_game_button: "START GAME", rewards_market_button: "REWARDS MARKET", my_purchases_button: "MY PURCHASES", logout_button: "Logout", market_title: "Rewards Market", claim_button: "Purchase", insufficient_points: "Insufficient Points",
+            purchase_success_part1: "Your reward claim has been received! To complete the process, please send us the auto-generated email by clicking the link below:", purchase_success_part2: "SEND EMAIL", purchase_fail: "You do not have enough points for this reward.",
+            purchases_title: "My Purchases", no_purchases: "You have not made any purchases yet.", inceleniyor: "Under Review", tanımlandı: "Completed", loading: "Loading...", promo_title: "Promotion Code", redeem_button: "Redeem"
         }
     };
     
@@ -90,12 +100,82 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function showScreen(screenNameKey) { Object.values(screens).forEach(screen => { if (screen) screen.classList.add('hidden'); }); if (screens[screenNameKey]) screens[screenNameKey].classList.remove('hidden'); }
-    function showNotification(message, type = 'error', target = notificationMessage) { target.innerHTML = message; target.className = `notification ${type}`; setTimeout(() => { target.className = 'notification hidden'; }, 10000); }
+    function showScreen(screenNameKey) {
+        Object.values(screens).forEach(screen => { if (screen) screen.classList.add('hidden'); });
+        if (screens[screenNameKey]) screens[screenNameKey].classList.remove('hidden');
+    }
+
+    function showNotification(message, type = 'error', target = notificationMessage) {
+        target.innerHTML = message;
+        target.className = `notification ${type}`;
+        setTimeout(() => { target.className = 'notification hidden'; }, 10000);
+    }
     
-    function updateTexts(lang) { /* ... Önceki tam updateTexts fonksiyonu ... */ }
-    function handleSelection(selection) { /* ... Önceki tam handleSelection fonksiyonu ... */ }
-    function switchTab(event, tabName) { /* ... Önceki tam switchTab fonksiyonu ... */ }
+    function updateTexts(lang) {
+        const langData = texts[lang];
+        if (!langData) return;
+        countrySelect.required = (lang === 'en');
+        document.getElementById('lang-select-title').textContent = langData.lang_select_title;
+        document.getElementById('location-warning-text').innerHTML = langData.location_warning;
+        carrefourLogo.src = langData.carrefour_logo_url;
+        document.getElementById('welcome-title').textContent = langData.welcome_title;
+        document.getElementById('login-tab').textContent = langData.login;
+        document.getElementById('register-tab').textContent = langData.register;
+        document.getElementById('login-email').placeholder = langData.email_placeholder;
+        document.getElementById('login-password').placeholder = langData.password_placeholder;
+        document.getElementById('login-button').textContent = langData.login;
+        document.getElementById('register-email').placeholder = langData.email_placeholder;
+        document.getElementById('register-password').placeholder = langData.password_placeholder;
+        document.getElementById('register-social').placeholder = langData.social_placeholder;
+        document.getElementById('register-card-gsm').placeholder = langData.card_gsm_placeholder;
+        document.getElementById('card-info-text').innerHTML = langData.card_info;
+        document.getElementById('follow-label').textContent = langData.follow_text;
+        document.getElementById('register-button').textContent = langData.register;
+        document.getElementById('how-to-play-link').textContent = langData.how_to_play;
+        forgotPasswordLink.textContent = langData.forgot_password;
+        document.getElementById('modal-title').textContent = langData.modal_title;
+        document.getElementById('modal-rules-title').textContent = langData.modal_rules_title;
+        document.getElementById('modal-rules-text').textContent = langData.modal_rules_text;
+        document.getElementById('modal-rewards-title').textContent = langData.modal_rewards_title;
+        const rewardsList = langData.rewards.map(reward => `<li>${reward}</li>`).join('');
+        document.getElementById('modal-rewards-text').innerHTML = `<ul>${rewardsList}</ul>`;
+        document.getElementById('modal-claim-title').textContent = langData.modal_claim_title;
+        document.getElementById('modal-claim-text').innerHTML = langData.modal_claim_text;
+        document.getElementById('reset-modal-title').textContent = langData.reset_modal_title;
+        document.getElementById('reset-modal-text').textContent = langData.reset_modal_text;
+        document.getElementById('reset-email').placeholder = langData.email_placeholder;
+        document.getElementById('reset-button').textContent = langData.reset_button;
+        document.getElementById('menu-welcome-title').textContent = langData.menu_welcome_title;
+        document.getElementById('points-label').textContent = langData.points_label;
+        document.getElementById('start-game-button').textContent = langData.start_game_button;
+        document.getElementById('rewards-market-button').textContent = langData.rewards_market_button;
+        document.getElementById('my-purchases-button').textContent = langData.my_purchases_button;
+        document.getElementById('logout-button').textContent = langData.logout_button;
+        document.getElementById('market-title').textContent = langData.market_title;
+        document.getElementById('market-points-label').textContent = langData.points_label;
+        document.getElementById('purchases-title').textContent = langData.purchases_title;
+        document.getElementById('promo-title').textContent = langData.promo_title;
+        document.getElementById('redeem-code-button').textContent = langData.redeem_button;
+    }
+
+    function handleSelection(selection) {
+        currentLang = selection;
+        updateTexts(currentLang);
+        screens.langSelect.classList.add('fade-out');
+        setTimeout(() => {
+            showScreen('auth');
+            screens.langSelect.classList.remove('fade-out');
+        }, 300);
+    }
+    
+    function switchTab(event, tabName) {
+        event.preventDefault();
+        const isLogin = tabName === 'login';
+        loginTab.classList.toggle('active', isLogin);
+        registerTab.classList.toggle('active', !isLogin);
+        loginForm.classList.toggle('hidden', !isLogin);
+        registerForm.classList.toggle('hidden', isLogin);
+    }
     
     function renderRewardsMarket() {
         const rewardsListEl = document.getElementById('rewards-list');
@@ -108,18 +188,29 @@ document.addEventListener('DOMContentLoaded', () => {
             card.innerHTML = `<img src="${reward.logo}" alt="${reward.brand}" class="reward-logo"><p class="reward-description">${reward.description}</p><div class="reward-points">${reward.points} ${texts[currentLang].points_label}</div><button class="claim-button" data-reward-id="${reward.id}" ${canAfford ? '' : 'disabled'}>${canAfford ? texts[currentLang].claim_button : texts[currentLang].insufficient_points}</button>`;
             rewardsListEl.appendChild(card);
         });
-        rewardsListEl.querySelectorAll('.claim-button:not([disabled])').forEach(button => { button.addEventListener('click', handlePurchase); });
+        rewardsListEl.querySelectorAll('.claim-button:not([disabled])').forEach(button => {
+            button.addEventListener('click', handlePurchase);
+        });
     }
 
     async function handlePurchase(event) {
         const rewardId = event.target.dataset.rewardId;
         const reward = (rewardsData[currentLang] || []).find(r => r.id === rewardId);
-        if (!reward || currentUserData.points < reward.points) { showNotification(texts[currentLang].purchase_fail, 'error', marketNotification); return; }
+        if (!reward || currentUserData.points < reward.points) {
+            showNotification(texts[currentLang].purchase_fail, 'error', marketNotification);
+            return;
+        }
         if (confirm(`${reward.points} ${texts[currentLang].points_label} kullanarak bu ödülü almak istediğinizden emin misiniz?`)) {
             const userDocRef = doc(db, 'users', currentUserData.uid);
             const claimsColRef = collection(userDocRef, 'claims');
             try {
-                const newClaimRef = await addDoc(claimsColRef, { rewardId: reward.id, rewardDescription: reward.description, pointsSpent: reward.points, status: 'inceleniyor', claimedAt: serverTimestamp() });
+                const newClaimRef = await addDoc(claimsColRef, {
+                    rewardId: reward.id,
+                    rewardDescription: reward.description,
+                    pointsSpent: reward.points,
+                    status: 'inceleniyor',
+                    claimedAt: serverTimestamp()
+                });
                 await updateDoc(userDocRef, { points: increment(-reward.points) });
                 currentUserData.points -= reward.points;
                 document.getElementById('user-points').textContent = currentUserData.points;
@@ -130,7 +221,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const mailtoLink = `mailto:gifts@kyrosil.eu?subject=${mailSubject}&body=${mailBody}`;
                 const successMessage = `${texts[currentLang].purchase_success_part1} <a href="${mailtoLink}" target="_blank">${texts[currentLang].purchase_success_part2}</a>`;
                 showNotification(successMessage, 'success', marketNotification);
-            } catch (error) { console.error("Satın alım hatası:", error); showNotification("Bir hata oluştu.", 'error', marketNotification); }
+            } catch (error) {
+                console.error("Satın alım hatası:", error);
+                showNotification("Bir hata oluştu.", 'error', marketNotification);
+            }
         }
     }
     
@@ -140,7 +234,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const claimsRef = collection(db, 'users', currentUserData.uid, 'claims');
         const q = query(claimsRef, orderBy('claimedAt', 'desc'));
         const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) { purchasesListEl.innerHTML = `<p>${texts[currentLang].no_purchases}</p>`; return; }
+        if (querySnapshot.empty) {
+            purchasesListEl.innerHTML = `<p>${texts[currentLang].no_purchases}</p>`;
+            return;
+        }
         purchasesListEl.innerHTML = '';
         querySnapshot.forEach((doc) => {
             const claim = doc.data();
@@ -156,12 +253,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Olay Yöneticileri ---
     selectTR.addEventListener('click', () => handleSelection('tr'));
     selectEU.addEventListener('click', () => handleSelection('en'));
-    // ... diğer tüm olay yöneticileri ...
+    loginTab.addEventListener('click', (e) => switchTab(e, 'login'));
+    registerTab.addEventListener('click', (e) => switchTab(e, 'register'));
+    howToPlayLink.addEventListener('click', (e) => { e.preventDefault(); infoModal.classList.remove('hidden'); });
+    modalCloseButton.addEventListener('click', () => infoModal.classList.add('hidden'));
+    forgotPasswordLink.addEventListener('click', (e) => { e.preventDefault(); resetPasswordModal.classList.remove('hidden'); });
+    resetModalCloseButton.addEventListener('click', () => resetPasswordModal.classList.add('hidden'));
+    logoutButton.addEventListener('click', (e) => { e.preventDefault(); signOut(auth); });
+    rewardsMarketButton.addEventListener('click', () => { showScreen('rewardsMarket'); document.getElementById('market-user-points').textContent = currentUserData.points || 0; renderRewardsMarket(); });
+    backToMenuButton.addEventListener('click', () => { showScreen('mainMenu'); });
+    myPurchasesButton.addEventListener('click', () => { showScreen('myPurchases'); renderMyPurchases(); });
+    purchasesBackButton.addEventListener('click', () => { showScreen('mainMenu'); });
+    document.getElementById('start-game-button').addEventListener('click', () => { console.log("Oyun Başlatılıyor..."); });
     
-    // Form Gönderme Olayları
-    loginForm.addEventListener('submit', (e) => { /* ... */ });
-    registerForm.addEventListener('submit', async (e) => { /* ... */ });
-    resetPasswordForm.addEventListener('submit', (e) => { /* ... */ });
+    loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; signInWithEmailAndPassword(auth, email, password).then((userCredential) => { if (!userCredential.user.emailVerified) { signOut(auth); showNotification(texts[currentLang].login_unverified, 'error'); } }).catch(() => { showNotification(texts[currentLang].login_fail, 'error'); }); });
+    registerForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = document.getElementById('register-email').value; const password = document.getElementById('register-password').value; const userData = { social: document.getElementById('register-social').value, card_gsm: document.getElementById('register-card-gsm').value, isFollowing: document.getElementById('follow-confirm').checked, region: currentLang, points: 0, createdAt: serverTimestamp() }; if (currentLang === 'en') { userData.country = countrySelect.value; } try { const userCredential = await createUserWithEmailAndPassword(auth, email, password); await sendEmailVerification(userCredential.user); await setDoc(doc(db, "users", userCredential.user.uid), userData); showNotification(texts[currentLang].register_success, 'success'); switchTab({ preventDefault: () => {} }, 'login'); } catch (error) { showNotification(error.message, 'error'); } });
+    resetPasswordForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('reset-email').value; sendPasswordResetEmail(auth, email).then(() => { resetPasswordModal.classList.add('hidden'); showNotification(texts[currentLang].reset_email_sent, 'success'); }).catch((error) => { showNotification(error.message, 'error'); }); });
     
     redeemCodeButton.addEventListener('click', async () => {
         const code = promoCodeInput.value.trim().toUpperCase();
@@ -171,13 +278,13 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const redeemPromoCode = httpsCallable(functions, 'redeemPromoCode');
             const result = await redeemPromoCode({ code: code });
-            showNotification(result.data.message, 'success', notificationMessage);
+            showNotification(result.data.message, 'success');
             currentUserData.points += result.data.pointsAdded;
             document.getElementById('user-points').textContent = currentUserData.points;
             promoCodeInput.value = '';
         } catch (error) {
             console.error("Promo kod hatası:", error);
-            showNotification(error.message, 'error', notificationMessage);
+            showNotification(error.message, 'error');
         } finally {
             redeemCodeButton.disabled = false;
             redeemCodeButton.textContent = texts[currentLang].redeem_button;
