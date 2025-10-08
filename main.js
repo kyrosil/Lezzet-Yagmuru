@@ -1,4 +1,3 @@
-// NIHAI ve TAM main.js KODU
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
@@ -23,7 +22,12 @@ const rewardsData = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    const screens = { langSelect: document.getElementById('language-selector-screen'), auth: document.getElementById('auth-screen'), mainMenu: document.getElementById('main-menu-screen'), rewardsMarket: document.getElementById('rewards-market-screen') };
+    const screens = {
+        langSelect: document.getElementById('language-selector-screen'),
+        auth: document.getElementById('auth-screen'),
+        mainMenu: document.getElementById('main-menu-screen'),
+        rewardsMarket: document.getElementById('rewards-market-screen'),
+    };
     const notificationMessage = document.getElementById('notification-message');
     const marketNotification = document.getElementById('market-notification');
     const selectTR = document.getElementById('select-tr');
@@ -76,6 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentLang = 'tr';
     let currentUserData = {};
 
+    function showScreen(screenNameKey) {
+        Object.values(screens).forEach(screen => { if (screen) screen.classList.add('hidden'); });
+        if (screens[screenNameKey]) screens[screenNameKey].classList.remove('hidden');
+    }
+
     onAuthStateChanged(auth, async (user) => {
         if (user && user.emailVerified) {
             const userDocRef = doc(db, 'users', user.uid);
@@ -92,11 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
             showScreen('langSelect');
         }
     });
-
-    function showScreen(screenNameKey) {
-        Object.values(screens).forEach(screen => { if (screen) screen.classList.add('hidden'); });
-        if (screens[screenNameKey]) screens[screenNameKey].classList.remove('hidden');
-    }
 
     function showNotification(message, type = 'error', target = notificationMessage) {
         target.textContent = message;
@@ -148,15 +152,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleSelection(selection) {
-        currentLang = selection; updateTexts(currentLang);
+        currentLang = selection;
+        updateTexts(currentLang);
         screens.langSelect.classList.add('fade-out');
-        setTimeout(() => { showScreen('auth'); screens.langSelect.classList.remove('fade-out');}, 300);
+        setTimeout(() => {
+            showScreen('auth');
+            screens.langSelect.classList.remove('fade-out');
+        }, 300);
     }
     
     function switchTab(event, tabName) {
-        event.preventDefault(); const isLogin = tabName === 'login';
-        loginTab.classList.toggle('active', isLogin); registerTab.classList.toggle('active', !isLogin);
-        loginForm.classList.toggle('hidden', !isLogin); registerForm.classList.toggle('hidden', isLogin);
+        event.preventDefault();
+        const isLogin = tabName === 'login';
+        loginTab.classList.toggle('active', isLogin);
+        registerTab.classList.toggle('active', !isLogin);
+        loginForm.classList.toggle('hidden', !isLogin);
+        registerForm.classList.toggle('hidden', isLogin);
     }
     
     function renderRewardsMarket() {
@@ -201,8 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-
-    // --- Olay Yöneticileri ---
+    
     selectTR.addEventListener('click', () => handleSelection('tr'));
     selectEU.addEventListener('click', () => handleSelection('en'));
     loginTab.addEventListener('click', (e) => switchTab(e, 'login'));
@@ -217,13 +227,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('market-user-points').textContent = currentUserData.points || 0;
         renderRewardsMarket();
     });
-    backToMenuButton.addEventListener('click', () => {
-        showScreen('mainMenu');
-        document.getElementById('user-points').textContent = currentUserData.points || 0;
-    });
-    document.getElementById('start-game-button').addEventListener('click', () => { console.log("Oyun Başlatılıyor..."); /* Buraya oyun başlatma kodu gelecek */ });
+    backToMenuButton.addEventListener('click', () => { showScreen('mainMenu'); });
+    document.getElementById('start-game-button').addEventListener('click', () => { console.log("Oyun Başlatılıyor..."); });
 
-    // --- Form Gönderme Olayları ---
     loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; signInWithEmailAndPassword(auth, email, password).then((userCredential) => { if (!userCredential.user.emailVerified) { signOut(auth); showNotification(texts[currentLang].login_unverified, 'error'); } }).catch(() => { showNotification(texts[currentLang].login_fail, 'error'); }); });
     registerForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = document.getElementById('register-email').value; const password = document.getElementById('register-password').value; const userData = { social: document.getElementById('register-social').value, card_gsm: document.getElementById('register-card-gsm').value, isFollowing: document.getElementById('follow-confirm').checked, region: currentLang, points: 0, createdAt: serverTimestamp() }; if (currentLang === 'en') { userData.country = countrySelect.value; } try { const userCredential = await createUserWithEmailAndPassword(auth, email, password); await sendEmailVerification(userCredential.user); await setDoc(doc(db, "users", userCredential.user.uid), userData); showNotification(texts[currentLang].register_success, 'success'); switchTab({ preventDefault: () => {} }, 'login'); } catch (error) { showNotification(error.message, 'error'); } });
     resetPasswordForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('reset-email').value; sendPasswordResetEmail(auth, email).then(() => { resetPasswordModal.classList.add('hidden'); showNotification(texts[currentLang].reset_email_sent, 'success'); }).catch((error) => { showNotification(error.message, 'error'); }); });
