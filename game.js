@@ -67,7 +67,8 @@ export function createGame(handleGameOver) {
 
     function create() {
         sceneContext = this;
-        player = this.physics.add.sprite(400, 550, 'basket').setDisplaySize(130, 110).setCollideWorldBounds(true); // Sepet de biraz büyüdü
+        // Sepet boyutu aynı kalıyor
+        player = this.physics.add.sprite(400, 550, 'basket').setDisplaySize(130, 110).setCollideWorldBounds(true);
         player.body.immovable = true;
         
         this.goodItems = this.physics.add.group();
@@ -116,22 +117,22 @@ export function createGame(handleGameOver) {
         if (typeChance < 0.55) { 
             itemKey = Phaser.Utils.Array.GetRandom(GOOD_ITEMS); 
             group = sceneContext.goodItems;
-            // YENİ BOYUTLAR
-            width = 65; height = 85; 
+            // YENİ BÜYÜK BOYUTLAR
+            width = 80; height = 100; 
         } else if (typeChance < 0.85) { 
             itemKey = Phaser.Utils.Array.GetRandom(BAD_ITEMS); 
             group = sceneContext.badItems;
-            // YENİ BOYUTLAR
-            width = 75; height = 75; 
+            // YENİ BÜYÜK BOYUTLAR
+            width = 85; height = 85; 
         } else { 
             itemKey = Phaser.Utils.Array.GetRandom(POWERUPS); 
             group = sceneContext.powerups;
-            // YENİ BOYUTLAR
-            width = 60; height = 60; 
+            // YENİ BÜYÜK BOYUTLAR
+            width = 70; height = 70; 
         }
         
-        // YENİ: Başlangıç pozisyonu daha da yukarı alındı (-150)
-        const item = group.create(x, -150, itemKey);
+        // YENİ: Başlangıç pozisyonu daha da yukarı alındı (-250)
+        const item = group.create(x, -250, itemKey);
         if (item) {
             item.setDisplaySize(width, height);
             item.setVelocityY(objectSpeed);
@@ -142,11 +143,11 @@ export function createGame(handleGameOver) {
     function spawnBonus() {
         if (lives <= 0 || !sceneContext) return;
         const x = Phaser.Math.Between(50, 750);
-        // YENİ: Başlangıç pozisyonu daha da yukarı alındı (-150)
-        const bonus = sceneContext.bonusItems.create(x, -150, 'carrefour');
+        // YENİ: Başlangıç pozisyonu daha da yukarı alındı (-250)
+        const bonus = sceneContext.bonusItems.create(x, -250, 'carrefour');
         if (bonus) {
-            // YENİ BOYUT
-            bonus.setDisplaySize(80, 80);
+            // YENİ BÜYÜK BOYUT
+            bonus.setDisplaySize(90, 90);
             bonus.setVelocityY(objectSpeed * 2.5);
         }
     }
@@ -171,7 +172,7 @@ export function createGame(handleGameOver) {
     function checkOutOfBounds(group, isGood) {
         if (!group || !sceneContext) return;
         group.children.each(item => {
-            if (item && item.y > sceneContext.physics.world.bounds.height + 100) { // Sınırı biraz daha genişlettim
+            if (item && item.y > sceneContext.physics.world.bounds.height + 100) {
                 if (isGood) loseLife();
                 item.destroy();
             }
