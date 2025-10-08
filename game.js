@@ -1,3 +1,192 @@
+class GameScene extends Phaser.Scene {
+    constructor() {
+        super({ key: 'GameScene' });
+    }
+
+    init(data) {
+        this.handleGameOver = data.handleGameOver;
+        this.score = 0;
+        this.lives = 3;
+        this.spawnRate = 1800;
+        this.objectSpeed = 200;
+        this.playerSpeed = 600;
+        this.isLosingLife = false;
+        this.startTime = 0;
+    }
+
+    preload() {
+        const ASSETS = {
+            'basket': 'sepet.png', 'coke': 'normal.png', 'coke_zero': 'zero.png',
+            'coke_light': 'light.png', 'fanta': 'fanta.png', 'sprite': 'sprite.png',
+            'cappy': 'https://i.imgur.com/832gT26.png', 'pepsi': 'pepsi.png',
+            'bomb': 'bomb.png', 'kitkat': 'kitkat.png', 'xpress': 'xpress.png',
+            'erikli': 'erikli.png', 'carrefour': 'carrefour.png'
+        };
+
+        if (window.location.href.includes('github.io')) {
+            this.load.setBaseURL('https://kyrosil.github.io/Lezzet-Yagmuru/');
+        }
+
+        for (const key in ASSETS) {
+            this.load.image(key, ASSETS[key]);
+        }
+    }
+
+    create() {
+        this.startTime = this.time.now; // Zorluk sıfırlama için zaman sayacını başlat
+        
+        this.player = this.physics.add.sprite(this.scale.width / 2, this.scale.height - 50, 'basket').setDisplaySize(130, 110).setCollideWorldBounds(true);
+        this.player.body.immovable = true;
+        
+        this.goodItems = this.physics.add.group();
+        this.badItems = this.physics.add.group();
+        this.powerups = this.physics.add.group();
+
+        this.physics.add.overlap(this.player, this.goodItems, this.collectGoodItem, null, this);
+        this.physics.add.overlap(this.player, this.badItems, this.hitBadItem, null, this);
+        this.physics.add.overlap(this.player, this.powerups, this.collectPowerup, null, this);
+        
+        this.gameTimer = this.time.addEvent({ delay: this.spawnRate, callback: this.spawnObject, callbackScope: this, loop: true });
+
+        this.updateScoreDisplay();
+        this.updateLivesDisplay();
+        
+        this.input.on('pointermove', (pointer) => {
+            if (this.lives > 0) {
+                 this.player.x = Phaser.Math.Clamp(pointer.x, 65, this.scale.width - 65);
+            }
+        });
+    }
+
+    update(time, delta) {
+        if (this.lives <= 0) return;
+        
+        const elapsedTime = (time - this.startTime) / 1000;
+        this.objectSpeed = 200 + (elapsedTime * 8);
+        this.spawnRate = Math.max(300, 1800 - (elapsedTime * 50));
+        this.gameTimer.delay = this.spawnRate;
+
+        this.checkOutOfBounds(this.goodItems, true);
+        this.checkOutOfBounds(this.badItems, false);
+        this.checkOutOfBounds(this.powerups, false);
+    }
+    
+    spawnObject() {
+        if (this.lives <= 0) return;
+        const x = Phaser.Math.Between(50, this.scale.width - 50);
+        const spawnY = -200; // Tepeden düşme garantisi için yüksek bir başlangıç
+        const typeChance = Phaser.Math.FloatBetween(0, 100);
+        let itemKey, group, width, height;
+
+        if (typeChance < 3) { // %3 ihtimalle Carrefour
+            itemKey = 'carrefour';
+            group = this.goodItems; width = 90; height = 90;
+        } else if (typeChance < 73) { // %70 ihtimalle normal iyi obje
+            itemKey = Phaser.Utils.Array.GetRandom(['coke', 'coke_zero', 'coke_light', 'fanta', 'sprite', 'cappy']); 
+            group = this.goodItems; width = 80; height = 100; 
+        } else if (typeChance < 90) { // %17 ihtimalle kötü obje
+            itemKey = Phaser.Utils.Array.GetRandom(['pepsi', 'bomb']); 
+            group = this.badItems; width = 85; height = 85; 
+        } else { // %10 ihtimalle power-up
+            itemKey = Phaser.Utils.Array.GetRandom(['kitkat', 'xpress', 'erikli']); 
+            group = this.powerups; width = 70; height = 70; 
+        }
+        
+        const item = this.physics.add.sprite(x, spawnY, itemKey);
+        if (item) {
+            group.add(item);
+            item.setDisplaySize(width, height);
+            item.setVelocityY(this.objectSpeed);
+            item.setAngularVelocity(Phaser.Math.Between(-100, 100));
+        }
+    }
+    
+    collectGoodItem(player, item) {
+        const key = item.texture.key;
+        if (key === 'carrefour') {
+            this.score += 30;
+            this.cameras.main.flash(100, 255, 255, 255); // Beyaz parlama efekti
+        } else {
+            this.score += 5;
+        }
+        item.destroy();
+        this.updateScoreDisplay();
+    }
+    
+    hitBadItem(player, item) {
+        item.destroy();
+        this.score = Math.max(0, this.score - 5);
+        this.updateScoreDisplay();
+        this.loseLife();
+    }
+    
+    collectPowerup(player, item) {
+        const key = item.texture.key;
+        item.destroy();
+        
+        if (key === 'erikli' && this.lives < 3) {
+            this.lives++;
+            this.updateLivesDisplay();
+        } else if (key === 'xpress' || key === 'kitkat') {
+            // Güçlendirmeler artık oyunu yavaşlatıyor
+            if (this.physics.world.timeScale === 1) { // Eğer zaten yavaş değilse
+                this.physics.world.timeScale = 0.5;
+                this.time.delayedCall(3000, () => {
+                    if (this.physics.world) this.physics.world.timeScale = 1;
+                }, [], this);
+            }
+        }
+    }
+    
+    loseLife() {
+        if (this.lives > 0 && !this.isLosingLife) {
+            this.isLosingLife = true;
+            this.lives--;
+            this.updateLivesDisplay();
+            this.cameras.main.flash(150, 255, 60, 60); // Kırmızı parlama efekti
+            this.time.delayedCall(100, () => { this.isLosingLife = false; });
+            if (this.lives <= 0) this.gameOver();
+        }
+    }
+    
+    checkOutOfBounds(group, isGood) {
+        if (!group) return;
+        const children = [...group.getChildren()];
+        children.forEach(item => {
+            if (item && item.y > this.scale.height + 100) {
+                if (isGood) this.loseLife();
+                item.destroy();
+            }
+        });
+    }
+
+    updateScoreDisplay() { 
+        const scoreElement = document.getElementById('score-text');
+        if (scoreElement) scoreElement.textContent = this.score; 
+    }
+    
+    updateLivesDisplay() {
+        const livesDisplay = document.getElementById('lives-display');
+        if (!livesDisplay) return;
+        livesDisplay.innerHTML = '';
+        const baseURL = window.location.href.includes('github.io') ? 'https://kyrosil.github.io/Lezzet-Yagmuru/' : '';
+        for (let i = 0; i < 3; i++) {
+            const lifeImg = document.createElement('img');
+            lifeImg.src = baseURL + 'normal.png';
+            if(i >= this.lives) lifeImg.style.opacity = '0.3';
+            livesDisplay.appendChild(lifeImg);
+        }
+    }
+
+    gameOver() {
+        this.physics.pause();
+        if (this.gameTimer) this.gameTimer.destroy();
+        if (this.bonusTimer) this.bonusTimer.destroy();
+        if(this.player) this.player.setTint(0xff0000).setVelocityX(0);
+        this.handleGameOver(this.score);
+    }
+}
+
 export function createGame(handleGameOver) {
     const config = {
         type: Phaser.AUTO,
@@ -8,17 +197,12 @@ export function createGame(handleGameOver) {
             width: 800,
             height: 600
         },
+        scene: [GameScene],
         physics: {
             default: 'arcade',
             arcade: {
-                gravity: { y: 0 },
-                debug: false
+                gravity: { y: 0 }
             }
-        },
-        scene: {
-            preload: preload,
-            create: create,
-            update: update
         },
         transparent: true
     };
@@ -26,205 +210,7 @@ export function createGame(handleGameOver) {
     if (window.phaserGame) {
         window.phaserGame.destroy(true);
     }
+    
     window.phaserGame = new Phaser.Game(config);
-    
-    let player, gameTimer, bonusTimer;
-    let score, lives, spawnRate, objectSpeed, startTime;
-    let sceneContext;
-    let isLosingLife = false; // Can kaybı koruması
-
-    const ASSETS = {
-        'basket': 'sepet.png', 'coke': 'normal.png', 'coke_zero': 'zero.png',
-        'coke_light': 'light.png', 'fanta': 'fanta.png', 'sprite': 'sprite.png',
-        'cappy': 'https://i.imgur.com/832gT26.png', 'pepsi': 'pepsi.png',
-        'bomb': 'bomb.png', 'kitkat': 'kitkat.png', 'xpress': 'xpress.png',
-        'erikli': 'erikli.png', 'carrefour': 'carrefour.png'
-    };
-    
-    const GOOD_ITEMS = ['coke', 'coke_zero', 'coke_light', 'fanta', 'sprite', 'cappy'];
-    const BAD_ITEMS = ['pepsi', 'bomb'];
-    const POWERUPS = ['kitkat', 'xpress', 'erikli'];
-
-    function preload() {
-        if (window.location.href.includes('github.io')) {
-            this.load.setBaseURL('https://kyrosil.github.io/Lezzet-Yagmuru/');
-        }
-        for (const key in ASSETS) {
-            this.load.image(key, ASSETS[key]);
-        }
-    }
-
-    function create() {
-        sceneContext = this;
-
-        // KESİN ÇÖZÜM 1: Her oyun başladığında tüm değerler sıfırlanıyor.
-        score = 0;
-        lives = 3;
-        spawnRate = 1800;
-        objectSpeed = 200;
-        startTime = this.time.now; // Zaman sayacını sıfırla
-        isLosingLife = false;
-        
-        player = this.physics.add.sprite(400, 550, 'basket').setDisplaySize(130, 110).setCollideWorldBounds(true);
-        player.body.immovable = true;
-        
-        this.goodItems = this.physics.add.group();
-        this.badItems = this.physics.add.group();
-        this.powerups = this.physics.add.group();
-        this.bonusItems = this.physics.add.group();
-
-        this.physics.add.overlap(player, this.goodItems, collectGoodItem, null, this);
-        this.physics.add.overlap(player, this.badItems, hitBadItem, null, this);
-        this.physics.add.overlap(player, this.powerups, collectPowerup, null, this);
-        this.physics.add.overlap(player, this.bonusItems, collectBonusItem, null, this);
-        
-        if (gameTimer) gameTimer.destroy();
-        gameTimer = this.time.addEvent({ delay: spawnRate, callback: spawnObject, callbackScope: this, loop: true });
-        
-        if (bonusTimer) bonusTimer.destroy();
-        // Carrefour logosu daha nadir düşecek
-        bonusTimer = this.time.addEvent({ delay: Phaser.Math.Between(30000, 60000), callback: spawnBonus, loop: true });
-
-        updateScoreDisplay();
-        updateLivesDisplay();
-        
-        this.input.on('pointermove', (pointer) => {
-            if (lives > 0) {
-                 player.x = Phaser.Math.Clamp(pointer.x, 65, this.physics.world.bounds.width - 65);
-            }
-        });
-    }
-
-    function update() {
-        if (lives <= 0) return;
-        
-        // KESİN ÇÖZÜM 1 (Devamı): Zaman artık oyunun başlangıcından itibaren sayılıyor.
-        const elapsedTime = (this.time.now - startTime) / 1000;
-        objectSpeed = 200 + (elapsedTime * 8);
-        spawnRate = Math.max(300, 1800 - (elapsedTime * 50));
-        gameTimer.delay = spawnRate;
-
-        checkOutOfBounds(this.goodItems, true);
-        checkOutOfBounds(this.bonusItems, true);
-        checkOutOfBounds(this.badItems, false);
-        checkOutOfBounds(this.powerups, false);
-    }
-    
-    function spawnObject() {
-        if (lives <= 0 || !sceneContext) return;
-        const x = Phaser.Math.Between(50, sceneContext.scale.width - 50);
-        const typeChance = Phaser.Math.FloatBetween(0, 1);
-        let itemKey, group, width, height;
-
-        if (typeChance < 0.70) {
-            itemKey = Phaser.Utils.Array.GetRandom(GOOD_ITEMS); 
-            group = sceneContext.goodItems; width = 80; height = 100; 
-        } else if (typeChance < 0.90) {
-            itemKey = Phaser.Utils.Array.GetRandom(BAD_ITEMS); 
-            group = sceneContext.badItems; width = 85; height = 85; 
-        } else {
-            itemKey = Phaser.Utils.Array.GetRandom(POWERUPS); 
-            group = sceneContext.powerups; width = 70; height = 70; 
-        }
-        
-        // KESİN ÇÖZÜM 2: Başlangıç pozisyonu artık her zaman ekranın tepesinin üstü.
-        const spawnY = sceneContext.cameras.main.worldView.y - 100;
-        const item = sceneContext.physics.add.sprite(x, spawnY, itemKey);
-        if (item) {
-            group.add(item);
-            item.setDisplaySize(width, height);
-            item.setVelocityY(objectSpeed);
-            item.setAngularVelocity(Phaser.Math.Between(-100, 100));
-        }
-    }
-    
-    function spawnBonus() {
-        if (lives <= 0 || !sceneContext) return;
-        const x = Phaser.Math.Between(50, sceneContext.scale.width - 50);
-        const spawnY = sceneContext.cameras.main.worldView.y - 100;
-        const bonus = sceneContext.physics.add.sprite(x, spawnY, 'carrefour');
-        if (bonus) {
-            sceneContext.bonusItems.add(bonus);
-            bonus.setDisplaySize(90, 90);
-            bonus.setVelocityY(objectSpeed * 2.5);
-        }
-    }
-
-    function collectGoodItem(player, item) { item.destroy(); score += 5; updateScoreDisplay(); }
-    function collectBonusItem(player, item) {
-        item.destroy();
-        score += 30;
-        updateScoreDisplay();
-        // Bonus efekti
-        sceneContext.cameras.main.flash(200, 255, 255, 0);
-    }
-    function hitBadItem(player, item) { item.destroy(); score = Math.max(0, score - 5); updateScoreDisplay(); loseLife(); }
-    
-    function collectPowerup(player, item) {
-        const key = item.texture.key;
-        item.destroy();
-        
-        if (key === 'erikli' && lives < 3) {
-            lives++;
-            updateLivesDisplay();
-        } else if (key === 'xpress' || key === 'kitkat') {
-            sceneContext.physics.world.timeScale = 0.5;
-            sceneContext.time.delayedCall(3000, () => {
-                if (sceneContext && sceneContext.physics) {
-                    sceneContext.physics.world.timeScale = 1;
-                }
-            }, [], sceneContext);
-        }
-    }
-    
-    // KESİN ÇÖZÜM 4: Can kaybetme mantığı artık daha güvenli.
-    function loseLife() {
-        if (lives > 0 && !isLosingLife) {
-            isLosingLife = true;
-            lives--;
-            updateLivesDisplay();
-            // Ekranı kırmızı flaşla
-            sceneContext.cameras.main.flash(200, 255, 0, 0);
-            sceneContext.time.delayedCall(200, () => { isLosingLife = false; }); // Kısa bir koruma süresi
-            if (lives <= 0) gameOver();
-        }
-    }
-    
-    function checkOutOfBounds(group, isGood) {
-        if (!group || !sceneContext) return;
-        const children = [...group.getChildren()];
-        children.forEach(item => {
-            if (item && item.y > sceneContext.scale.height + 100) {
-                if (isGood) loseLife();
-                item.destroy();
-            }
-        });
-    }
-
-    function updateScoreDisplay() { 
-        const scoreElement = document.getElementById('score-text');
-        if (scoreElement) scoreElement.textContent = score; 
-    }
-    
-    function updateLivesDisplay() {
-        const livesDisplay = document.getElementById('lives-display');
-        if (!livesDisplay) return;
-        livesDisplay.innerHTML = '';
-        const baseURL = window.location.href.includes('github.io') ? 'https://kyrosil.github.io/Lezzet-Yagmuru/' : '';
-        for (let i = 0; i < 3; i++) {
-            const lifeImg = document.createElement('img');
-            lifeImg.src = baseURL + 'normal.png';
-            if(i >= lives) lifeImg.style.opacity = '0.3';
-            livesDisplay.appendChild(lifeImg);
-        }
-    }
-
-    function gameOver() {
-        if (!sceneContext) return;
-        sceneContext.physics.pause();
-        if (gameTimer) gameTimer.destroy();
-        if (bonusTimer) bonusTimer.destroy();
-        if (player) player.setTint(0xff0000).setVelocityX(0);
-        handleGameOver(score);
-    }
+    window.phaserGame.scene.start('GameScene', { handleGameOver: handleGameOver });
 }
