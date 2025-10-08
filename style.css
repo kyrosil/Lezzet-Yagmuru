@@ -1,10 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 * { box-sizing: border-box; }
-html, body { height: 100%; margin: 0; }
-body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #e61d2b, #0d3b66); color: #333; }
-#app { display: flex; justify-content: center; align-items: center; width: 100%; min-height: 100vh; padding: 80px 20px 20px 20px; }
-.language-selector-container, .auth-container, .main-menu-container, .rewards-market-container, .my-purchases-container { background-color: white; padding: 30px 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); text-align: center; width: 100%; max-width: 500px; transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
-.rewards-market-container, .my-purchases-container { max-width: 700px; padding: 20px;}
+html { height: 100%; }
+body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #e61d2b, #0d3b66); color: #333; margin: 0; min-height: 100%; }
+#app { display: flex; justify-content: center; align-items: center; width: 100%; min-height: 100vh; padding: 80px 20px; }
+.container { background-color: white; padding: 30px 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); text-align: center; width: 100%; max-width: 500px; transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
+.rewards-market-container, .my-purchases-container { max-width: 700px; padding: 20px; }
+/* Diğer stiller öncekiyle aynı... */
 .language-selector-container.fade-out { transform: scale(0.9); opacity: 0; }
 .main-logo-small { max-height: 60px; margin-bottom: 15px; }
 .options-wrapper { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
@@ -59,7 +60,7 @@ form button:hover { background-color: #c01220; }
 .menu-button#rewards-market-button:hover { box-shadow: 0 6px 15px rgba(13, 59, 102, 0.4); }
 .menu-button.tertiary { background-color: #6c757d; }
 .menu-button.tertiary:hover { box-shadow: 0 6px 15px rgba(108, 117, 125, 0.4); }
-.menu-button.action { background-color: #0d3b66; } /* Mavi Buton */
+.menu-button.action { background-color: #0d3b66; }
 .menu-button.action:hover { box-shadow: 0 6px 15px rgba(13, 59, 102, 0.4); }
 .promo-code-area { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
 .promo-code-area h4 { margin: 0 0 15px 0; color: #555; font-weight: 600; }
