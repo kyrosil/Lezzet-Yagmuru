@@ -34,12 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerTab = document.getElementById('register-tab');
     const loginForm = document.getElementById('login-form');
     const registerForm = document.getElementById('register-form');
-    const countryWrapper = document.getElementById('country-wrapper');
     const carrefourLogo = document.getElementById('carrefour-logo');
     const howToPlayLink = document.getElementById('how-to-play-link');
     const infoModal = document.getElementById('info-modal');
     const modalCloseButton = document.getElementById('modal-close-button');
-    const countrySelect = document.getElementById('register-country');
     const forgotPasswordLink = document.getElementById('forgot-password-link');
     const resetPasswordModal = document.getElementById('reset-password-modal');
     const resetModalCloseButton = document.getElementById('reset-modal-close-button');
@@ -101,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let currentLang = 'tr';
     let currentUserData = {};
+    let justRegistered = false; // Kayıt sonrası sayfa yenilemesini engellemek için
 
     async function updateDailyTries(userDocRef) {
         const userDocSnap = await getDoc(userDocRef);
@@ -117,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     onAuthStateChanged(auth, async (user) => {
+        if (justRegistered) return; // Yeni kaydolduysa, ekranı değiştirmeyi engelle
         if (user && user.emailVerified) {
             const userDocRef = doc(db, 'users', user.uid);
             const triesLeft = await updateDailyTries(userDocRef);
@@ -313,20 +313,22 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; signInWithEmailAndPassword(auth, email, password).then((userCredential) => { if (!userCredential.user.emailVerified) { signOut(auth); showNotification(texts[currentLang].login_unverified, 'error'); } }).catch(() => { showNotification(texts[currentLang].login_fail, 'error'); }); });
-    registerForm.addEventListener('submit', async (e) => {
+    registerForm.addEventListener('submit', async (e) => { 
         e.preventDefault();
         const email = document.getElementById('register-email').value;
         const password = document.getElementById('register-password').value;
         const userData = { social: document.getElementById('register-social').value, card_gsm: document.getElementById('register-card-gsm').value, isFollowing: document.getElementById('follow-confirm').checked, region: currentLang, points: 0, createdAt: serverTimestamp() }; 
-        if (currentLang === 'en') {
-             // Europe kaydından ülke seçimi kaldırıldı.
-        }
         try { 
             const userCredential = await createUserWithEmailAndPassword(auth, email, password); 
-            await sendEmailVerification(userCredential.user); 
+            await sendEmailVerification(userCredential.user);
             await setDoc(doc(db, "users", userCredential.user.uid), userData); 
+            
+            justRegistered = true;
+            await signOut(auth);
+            justRegistered = false;
+
             showNotification(texts[currentLang].register_success, 'success'); 
-            registerForm.reset(); // Formu temizle
+            registerForm.reset();
         } catch (error) { 
             showNotification(error.message, 'error'); 
         } 
