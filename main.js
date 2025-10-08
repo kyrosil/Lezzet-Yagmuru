@@ -1,251 +1,96 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, increment, serverTimestamp, collection, addDoc, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDAlIpvrMtKbfOJmTo1Ut4H3lV3KMePQZo",
-  authDomain: "lezzet-yagmuru.firebaseapp.com",
-  projectId: "lezzet-yagmuru",
-  storageBucket: "lezzet-yagmuru.appspot.com",
-  messagingSenderId: "435103121551",
-  appId: "1:435103121551:web:3ad5ce4a45b557e026f0fa",
-  measurementId: "G-805ZG6M5VK"
-};
-
-const fbApp = initializeApp(firebaseConfig);
-const auth = getAuth(fbApp);
-const db = getFirestore(fbApp);
-
-const rewardsData = {
-    tr: [ { id: 'tr01', points: 500, brand: 'coca-cola', description: "Coca-Cola ürünlerinde geçerli 150 TL Puan", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-5.png?ssl=1"}, { id: 'tr02', points: 750, brand: 'nestle', description: "Nestlé ürünlerinde geçerli 150 TL Puan", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-3.png?ssl=1"}, { id: 'tr03', points: 1000, brand: 'carrefoursa', description: "Tüm ürünlerde geçerli 100 TL Puan", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-16.png?ssl=1"}, { id: 'tr04', points: 1000, brand: 'coca-cola', description: "Coca-Cola ürünlerinde geçerli 350 TL Puan", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-5.png?ssl=1"}, { id: 'tr05', points: 1500, brand: 'nestle', description: "Nestlé ürünlerinde geçerli 400 TL Puan", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-3.png?ssl=1"}, { id: 'tr06', points: 2000, brand: 'coca-cola', description: "Coca-Cola ürünlerinde geçerli 750 TL Puan", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-5.png?ssl=1"}, { id: 'tr07', points: 2000, brand: 'carrefoursa', description: "Tüm ürünlerde geçerli 200 TL Puan", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-16.png?ssl=1"}, { id: 'tr08', points: 5000, brand: 'coca-cola', description: "Coca-Cola ve Nestlé'de geçerli 2500 TL Puan", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-5.png?ssl=1"}, { id: 'tr09', points: 10000, brand: 'carrefoursa', description: "Tüm ürünlerde geçerli 2000 TL Puan", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-16.png?ssl=1"} ],
-    en: [ { id: 'en01', points: 500, brand: 'coca-cola', description: "5€ Points for Coca-Cola products", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-5.png?ssl=1"}, { id: 'en02', points: 750, brand: 'nestle', description: "7.5€ Points for Nestlé products", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-3.png?ssl=1"}, { id: 'en03', points: 1000, brand: 'carrefour', description: "5€ Points for all products", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-17.png?ssl=1"}, { id: 'en04', points: 1000, brand: 'coca-cola', description: "12.5€ Points for Coca-Cola products", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-5.png?ssl=1"}, { id: 'en05', points: 1500, brand: 'nestle', description: "17.5€ Points for Nestlé products", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-3.png?ssl=1"}, { id: 'en06', points: 2000, brand: 'coca-cola', description: "30€ Points for Coca-Cola products", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-5.png?ssl=1"}, { id: 'en07', points: 2000, brand: 'carrefour', description: "12€ Points for all products", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-17.png?ssl=1"}, { id: 'en08', points: 5000, brand: 'coca-cola', description: "50€ Points for Coca-Cola & Nestlé", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-5.png?ssl=1"}, { id: 'en09', points: 10000, brand: 'carrefour', description: "80€ Points for all products", logo: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-17.png?ssl=1"} ]
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-    const screens = { langSelect: document.getElementById('language-selector-screen'), auth: document.getElementById('auth-screen'), mainMenu: document.getElementById('main-menu-screen'), rewardsMarket: document.getElementById('rewards-market-screen'), myPurchases: document.getElementById('my-purchases-screen') };
-    const notificationMessage = document.getElementById('notification-message');
-    const marketNotification = document.getElementById('market-notification');
-    const selectTR = document.getElementById('select-tr');
-    const selectEU = document.getElementById('select-eu');
-    const loginTab = document.getElementById('login-tab');
-    const registerTab = document.getElementById('register-tab');
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    const countryWrapper = document.getElementById('country-wrapper');
-    const carrefourLogo = document.getElementById('carrefour-logo');
-    const howToPlayLink = document.getElementById('how-to-play-link');
-    const infoModal = document.getElementById('info-modal');
-    const modalCloseButton = document.getElementById('modal-close-button');
-    const countrySelect = document.getElementById('register-country');
-    const forgotPasswordLink = document.getElementById('forgot-password-link');
-    const resetPasswordModal = document.getElementById('reset-password-modal');
-    const resetModalCloseButton = document.getElementById('reset-modal-close-button');
-    const resetPasswordForm = document.getElementById('reset-password-form');
-    const logoutButton = document.getElementById('logout-button');
-    const rewardsMarketButton = document.getElementById('rewards-market-button');
-    const backToMenuButton = document.getElementById('back-to-menu-button');
-    const myPurchasesButton = document.getElementById('my-purchases-button');
-    const purchasesBackButton = document.getElementById('purchases-back-button');
-    
-    const texts = {
-        tr: {
-            carrefour_logo_url: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-16.png?ssl=1", lang_select_title: "Konumunu Seç", location_warning: "<strong>ÖNEMLİ:</strong> Ödüllerin doğru bir şekilde tanımlanabilmesi için lütfen yaşadığınız bölgeyi doğru seçiniz. Bu seçim daha sonra değiştirilemez.", welcome_title: "Lezzet Yağmuru'na Hoş Geldin!", login: "Giriş Yap", register: "Kayıt Ol", email_placeholder: "E-posta Adresi", password_placeholder: "Şifre", social_placeholder: "Sosyal Medya Kullanıcı Adı", card_gsm_placeholder: "CarrefourSA Kart No / GSM No",
-            card_info: `Kartınız yok mu? <a href="https://www.carrefoursakart.com/" target="_blank">Hemen oluşturun!</a>`,
-            follow_text: "@Kyrosil hesabını takip ediyorum.", how_to_play: "Nasıl Oynanır & Ödüller", modal_title: "Nasıl Oynanır & Ödüller", modal_rules_title: "Oyun Kuralları",
-            modal_rules_text: "CarrefourSA sepeti ile yukarıdan yağan Coca-Cola ürünlerini yakala. Farklı markalara ve bombalara dikkat et! Nestlé ürünleri sana özel güçler kazandıracak. 3 Coca-Cola şişesi kaçırırsan oyun biter.",
-            modal_rewards_title: "Türkiye Ödülleri", rewards: rewardsData.tr.map(r => `<strong>${r.points} PUAN:</strong> ${r.description}`),
-            modal_claim_title: "Ödül Nasıl Talep Edilir?", modal_claim_text: `Yeterli puana ulaştığında, Ödül Marketi'ndeki 'Satın Al' butonuna tıklayarak puanlarını kullanabilirsin. Puanların anında CarrefourSA kartına yüklenecektir. Yüklemenin doğrulanması için, alışveriş fişinin bir kopyasını <a href="mailto:gifts@kyrosil.eu">gifts@kyrosil.eu</a> adresine göndermen gerekmektedir.`,
-            register_success: "Kayıt başarılı! Lütfen e-posta kutunuzu kontrol ederek hesabınızı doğrulayın.", login_success: "Giriş başarılı! Ana menüye yönlendiriliyorsunuz...", login_unverified: "Lütfen önce e-postanızı onaylayın.", login_fail: "Giriş başarısız oldu. Lütfen bilgilerinizi kontrol edin.",
-            forgot_password: "Şifremi Unuttum?", reset_modal_title: "Şifre Sıfırla", reset_modal_text: "Kayıtlı e-posta adresinizi girin. Size şifrenizi sıfırlamanız için bir link göndereceğiz.", reset_button: "Sıfırlama Linki Gönder", reset_email_sent: "Şifre sıfırlama e-postası gönderildi. Lütfen e-posta kutunuzu kontrol edin.",
-            menu_welcome_title: "Hoş Geldin", points_label: "PUAN", start_game_button: "OYUNA BAŞLA", rewards_market_button: "ÖDÜL MARKETİ", logout_button: "Çıkış Yap", market_title: "Ödül Marketi", claim_button: "Satın Al", insufficient_points: "Yetersiz Puan",
-            purchase_success_part1: "Ödül talebiniz alındı! İşlemi tamamlamak için lütfen aşağıdaki linke tıklayarak bize, otomatik oluşturulan e-postayı gönderin:", purchase_success_part2: "E-POSTA GÖNDER", purchase_fail: "Bu ödülü almak için yeterli puanınız yok.",
-            my_purchases_button: "SATIN ALIMLARIM", purchases_title: "Satın Alımlarım", no_purchases: "Henüz bir satın alım yapmadınız.", inceleniyor: "İnceleniyor", tanımlandı: "Tanımlandı"
-        },
-        en: {
-            carrefour_logo_url: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-17.png?ssl=1", lang_select_title: "Select Your Location", location_warning: "<strong>IMPORTANT:</strong> To ensure correct prize allocation, please select the region you live in. This selection cannot be changed later.", welcome_title: "Welcome to Taste Rain!", login: "Login", register: "Sign Up", email_placeholder: "Email Address", password_placeholder: "Password", social_placeholder: "Social Media Username", card_gsm_placeholder: "Carrefour Card No / Mobile No",
-            card_info: "If you don't have a card, enter your mobile number. You will need to create a card in-store to claim your prize.",
-            follow_text: "I am following the @Kyrosil account.", how_to_play: "How to Play & Prizes", modal_title: "How to Play & Prizes", modal_rules_title: "Game Rules",
-            modal_rules_text: "Catch the falling Coca-Cola products with the Carrefour cart. Watch out for other brands and bombs! Nestlé products will give you special powers. The game ends if you miss 3 Coca-Cola bottles.",
-            modal_rewards_title: "Europe Prizes", rewards: rewardsData.en.map(r => `<strong>${r.points} PTS:</strong> ${r.description}`),
-            modal_claim_title: "How to Claim a Prize?", modal_claim_text: `When you have enough points, you can use them by clicking the 'Purchase' button in the Rewards Market. The points will be instantly loaded onto your Carrefour card. For verification, you must send a copy of your purchase receipt to <a href="mailto:gifts@kyrosil.eu">gifts@kyrosil.eu</a>.`,
-            register_success: "Registration successful! Please check your email inbox to verify your account.", login_success: "Login successful! Redirecting to the main menu...", login_unverified: "Please verify your email before logging in.", login_fail: "Login failed. Please check your credentials.",
-            forgot_password: "Forgot Password?", reset_modal_title: "Reset Password", reset_modal_text: "Enter your registered email address. We will send you a link to reset your password.", reset_button: "Send Reset Link", reset_email_sent: "Password reset email sent. Please check your inbox.",
-            menu_welcome_title: "Welcome", points_label: "POINTS", start_game_button: "START GAME", rewards_market_button: "REWARDS MARKET", logout_button: "Logout", market_title: "Rewards Market", claim_button: "Purchase", insufficient_points: "Insufficient Points",
-            purchase_success_part1: "Your reward claim has been received! To complete the process, please send us the auto-generated email by clicking the link below:", purchase_success_part2: "SEND EMAIL", purchase_fail: "You do not have enough points for this reward.",
-            my_purchases_button: "MY PURCHASES", purchases_title: "My Purchases", no_purchases: "You have not made any purchases yet.", inceleniyor: "Under Review", tanımlandı: "Completed"
-        }
-    };
-    
-    let currentLang = 'tr';
-    let currentUserData = {};
-
-    onAuthStateChanged(auth, async (user) => {
-        if (user && user.emailVerified) {
-            const userDocRef = doc(db, 'users', user.uid);
-            const userDocSnap = await getDoc(userDocRef);
-            if (userDocSnap.exists()) {
-                currentUserData = { uid: user.uid, email: user.email, ...userDocSnap.data() };
-                currentLang = currentUserData.region || 'tr';
-                updateTexts(currentLang);
-                showScreen('mainMenu');
-                document.getElementById('user-email-display').textContent = currentUserData.email;
-                document.getElementById('user-points').textContent = currentUserData.points || 0;
-            } else { console.error("User data not found in Firestore!"); signOut(auth); }
-        } else {
-            showScreen('langSelect');
-        }
-    });
-
-    function showScreen(screenNameKey) {
-        Object.values(screens).forEach(screen => { if (screen) screen.classList.add('hidden'); });
-        if (screens[screenNameKey]) screens[screenNameKey].classList.remove('hidden');
-    }
-
-    function showNotification(message, type = 'error', target = notificationMessage) {
-        target.innerHTML = message; // innerHTML olarak değiştirildi linkler için
-        target.className = `notification ${type}`;
-        setTimeout(() => { target.className = 'notification hidden'; }, 10000); // Süre uzatıldı
-    }
-    
-    function updateTexts(lang) {
-        const langData = texts[lang]; if (!langData) return;
-        countrySelect.required = (lang === 'en');
-        // Dil Seçim
-        document.getElementById('lang-select-title').textContent = langData.lang_select_title;
-        document.getElementById('location-warning-text').innerHTML = langData.location_warning;
-        // Auth
-        carrefourLogo.src = langData.carrefour_logo_url;
-        document.getElementById('welcome-title').textContent = langData.welcome_title;
-        document.getElementById('login-tab').textContent = langData.login;
-        document.getElementById('register-tab').textContent = langData.register;
-        document.getElementById('login-email').placeholder = langData.email_placeholder;
-        document.getElementById('login-password').placeholder = langData.password_placeholder;
-        document.getElementById('login-button').textContent = langData.login;
-        document.getElementById('register-email').placeholder = langData.email_placeholder;
-        document.getElementById('register-password').placeholder = langData.password_placeholder;
-        document.getElementById('register-social').placeholder = langData.social_placeholder;
-        document.getElementById('register-card-gsm').placeholder = langData.card_gsm_placeholder;
-        document.getElementById('card-info-text').innerHTML = langData.card_info;
-        document.getElementById('follow-label').textContent = langData.follow_text;
-        document.getElementById('register-button').textContent = langData.register;
-        document.getElementById('how-to-play-link').textContent = langData.how_to_play;
-        forgotPasswordLink.textContent = langData.forgot_password;
-        // Modallar
-        document.getElementById('modal-title').textContent = langData.modal_title;
-        document.getElementById('modal-rules-title').textContent = langData.modal_rules_title;
-        document.getElementById('modal-rules-text').textContent = langData.modal_rules_text;
-        document.getElementById('modal-rewards-title').textContent = langData.modal_rewards_title;
-        const rewardsList = langData.rewards.map(reward => `<li>${reward}</li>`).join('');
-        document.getElementById('modal-rewards-text').innerHTML = `<ul>${rewardsList}</ul>`;
-        document.getElementById('modal-claim-title').textContent = langData.modal_claim_title;
-        document.getElementById('modal-claim-text').innerHTML = langData.modal_claim_text;
-        document.getElementById('reset-modal-title').textContent = langData.reset_modal_title;
-        document.getElementById('reset-modal-text').textContent = langData.reset_modal_text;
-        document.getElementById('reset-email').placeholder = langData.email_placeholder;
-        document.getElementById('reset-button').textContent = langData.reset_button;
-        // Ana Menü
-        document.getElementById('menu-welcome-title').textContent = langData.menu_welcome_title;
-        document.getElementById('points-label').textContent = langData.points_label;
-        document.getElementById('start-game-button').textContent = langData.start_game_button;
-        document.getElementById('rewards-market-button').textContent = langData.rewards_market_button;
-        document.getElementById('my-purchases-button').textContent = langData.my_purchases_button;
-        document.getElementById('logout-button').textContent = langData.logout_button;
-        // Market ve Satın Alımlarım
-        document.getElementById('market-title').textContent = langData.market_title;
-        document.getElementById('market-points-label').textContent = langData.points_label;
-        document.getElementById('purchases-title').textContent = langData.purchases_title;
-    }
-
-    function handleSelection(selection) {
-        currentLang = selection; updateTexts(currentLang);
-        screens.langSelect.classList.add('fade-out');
-        setTimeout(() => { showScreen('auth'); screens.langSelect.classList.remove('fade-out');}, 300);
-    }
-    
-    function switchTab(event, tabName) {
-        event.preventDefault(); const isLogin = tabName === 'login';
-        loginTab.classList.toggle('active', isLogin); registerTab.classList.toggle('active', !isLogin);
-        loginForm.classList.toggle('hidden', !isLogin); registerForm.classList.toggle('hidden', isLogin);
-    }
-    
-    function renderRewardsMarket() {
-        const rewardsListEl = document.getElementById('rewards-list');
-        rewardsListEl.innerHTML = '';
-        const langRewards = rewardsData[currentLang] || [];
-        langRewards.forEach(reward => {
-            const canAfford = currentUserData.points >= reward.points;
-            const card = document.createElement('div');
-            card.className = 'reward-card';
-            card.innerHTML = `<img src="${reward.logo}" alt="${reward.brand}" class="reward-logo"><p class="reward-description">${reward.description}</p><div class="reward-points">${reward.points} ${texts[currentLang].points_label}</div><button class="claim-button" data-reward-id="${reward.id}" ${canAfford ? '' : 'disabled'}>${canAfford ? texts[currentLang].claim_button : texts[currentLang].insufficient_points}</button>`;
-            rewardsListEl.appendChild(card);
-        });
-        rewardsListEl.querySelectorAll('.claim-button:not([disabled])').forEach(button => {
-            button.addEventListener('click', handlePurchase);
-        });
-    }
-
-    async function handlePurchase(event) {
-        const button = event.target;
-        const rewardId = button.dataset.rewardId;
-        const langRewards = rewardsData[currentLang] || [];
-        const reward = langRewards.find(r => r.id === rewardId);
-        if (!reward || currentUserData.points < reward.points) { showNotification(texts[currentLang].purchase_fail, 'error', marketNotification); return; }
-        if (confirm(`${reward.points} ${texts[currentLang].points_label} kullanarak bu ödülü almak istediğinizden emin misiniz?`)) {
-            const userDocRef = doc(db, 'users', currentUserData.uid);
-            const claimsColRef = collection(db, 'users', currentUserData.uid, 'claims');
-            try {
-                const newClaimRef = await addDoc(claimsColRef, { rewardId: reward.id, rewardDescription: reward.description, pointsSpent: reward.points, status: 'inceleniyor', claimedAt: serverTimestamp() });
-                await updateDoc(userDocRef, { points: increment(-reward.points) });
-                currentUserData.points -= reward.points;
-                document.getElementById('user-points').textContent = currentUserData.points;
-                document.getElementById('market-user-points').textContent = currentUserData.points;
-                renderRewardsMarket();
-                const mailSubject = encodeURIComponent(`Ödül Talebi: ${reward.description} (#${newClaimRef.id.substring(0,6)})`);
-                const mailBody = encodeURIComponent(`Kullanıcı ID: ${currentUserData.uid}\nKullanıcı E-posta: ${currentUserData.email}\n\nTalep Edilen Ödül:\n- ID: ${newClaimRef.id}\n- Açıklama: ${reward.description}\n- Puan Değeri: ${reward.points}\n\nLütfen bu ödülü Carrefour kartıma/GSM numarama tanımlayın:\n- Kart/GSM No: ${currentUserData.card_gsm}`);
-                const mailtoLink = `mailto:gifts@kyrosil.eu?subject=${mailSubject}&body=${mailBody}`;
-                const successMessage = `${texts[currentLang].purchase_success_part1} <a href="${mailtoLink}" target="_blank">${texts[currentLang].purchase_success_part2}</a>`;
-                showNotification(successMessage, 'success', marketNotification);
-            } catch (error) { console.error("Puan güncelleme hatası:", error); showNotification("Bir hata oluştu. Lütfen tekrar deneyin.", 'error', marketNotification); }
-        }
-    }
-    
-    async function renderMyPurchases() {
-        const purchasesListEl = document.getElementById('purchases-list');
-        purchasesListEl.innerHTML = `<p>${texts[currentLang].loading || 'Yükleniyor...'}</p>`;
-        const claimsRef = collection(db, 'users', currentUserData.uid, 'claims');
-        const q = query(claimsRef, orderBy('claimedAt', 'desc'));
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) { purchasesListEl.innerHTML = `<p>${texts[currentLang].no_purchases}</p>`; return; }
-        purchasesListEl.innerHTML = '';
-        querySnapshot.forEach((doc) => {
-            const claim = doc.data();
-            const claimDate = claim.claimedAt ? claim.claimedAt.toDate().toLocaleDateString() : '';
-            const statusText = texts[currentLang][claim.status] || claim.status;
-            const item = document.createElement('div');
-            item.className = 'purchase-item';
-            item.innerHTML = `<div class="purchase-details"><span class="purchase-description">${claim.rewardDescription}</span><span class="purchase-date">${claimDate}</span></div><div class="purchase-status ${claim.status === 'tanımlandı' ? 'completed' : 'review'}">${statusText}</div>`;
-            purchasesListEl.appendChild(item);
-        });
-    }
-
-    // --- Olay Yöneticileri ---
-    selectTR.addEventListener('click', () => handleSelection('tr'));
-    selectEU.addEventListener('click', () => handleSelection('en'));
-    loginTab.addEventListener('click', (e) => switchTab(e, 'login'));
-    registerTab.addEventListener('click', (e) => switchTab(e, 'register'));
-    howToPlayLink.addEventListener('click', (e) => { e.preventDefault(); infoModal.classList.remove('hidden'); });
-    modalCloseButton.addEventListener('click', () => infoModal.classList.add('hidden'));
-    forgotPasswordLink.addEventListener('click', (e) => { e.preventDefault(); resetPasswordModal.classList.remove('hidden'); });
-    resetModalCloseButton.addEventListener('click', () => resetPasswordModal.classList.add('hidden'));
-    logoutButton.addEventListener('click', (e) => { e.preventDefault(); signOut(auth); });
-    rewardsMarketButton.addEventListener('click', () => { showScreen('rewardsMarket'); document.getElementById('market-user-points').textContent = currentUserData.points || 0; renderRewardsMarket(); });
-    backToMenuButton.addEventListener('click', () => { showScreen('mainMenu'); });
-    myPurchasesButton.addEventListener('click', () => { showScreen('myPurchases'); renderMyPurchases(); });
-    purchasesBackButton.addEventListener('click', () => { showScreen('mainMenu'); });
-    document.getElementById('start-game-button').addEventListener('click', () => { console.log("Oyun Başlatılıyor..."); });
-    loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; signInWithEmailAndPassword(auth, email, password).then((userCredential) => { if (!userCredential.user.emailVerified) { signOut(auth); showNotification(texts[currentLang].login_unverified, 'error'); } }).catch(() => { showNotification(texts[currentLang].login_fail, 'error'); }); });
-    registerForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = document.getElementById('register-email').value; const password = document.getElementById('register-password').value; const userData = { social: document.getElementById('register-social').value, card_gsm: document.getElementById('register-card-gsm').value, isFollowing: document.getElementById('follow-confirm').checked, region: currentLang, points: 0, createdAt: serverTimestamp() }; if (currentLang === 'en') { userData.country = countrySelect.value; } try { const userCredential = await createUserWithEmailAndPassword(auth, email, password); await sendEmailVerification(userCredential.user); await setDoc(doc(db, "users", userCredential.user.uid), userData); showNotification(texts[currentLang].register_success, 'success'); switchTab({ preventDefault: () => {} }, 'login'); } catch (error) { showNotification(error.message, 'error'); } });
-    resetPasswordForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('reset-email').value; sendPasswordResetEmail(auth, email).then(() => { resetPasswordModal.classList.add('hidden'); showNotification(texts[currentLang].reset_email_sent, 'success'); }).catch((error) => { showNotification(error.message, 'error'); }); });
-
-    updateTexts(currentLang);
-});
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #e61d2b, #0d3b66); color: #333; overflow-x: hidden; }
+#app { display: flex; justify-content: center; align-items: center; width: 100%; min-height: 100%; padding: 60px 20px; }
+.language-selector-container, .auth-container, .main-menu-container, .rewards-market-container, .my-purchases-container { background-color: white; padding: 30px 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); text-align: center; width: 100%; max-width: 500px; transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
+.rewards-market-container, .my-purchases-container { max-width: 700px; padding: 20px;}
+.language-selector-container.fade-out { transform: scale(0.9); opacity: 0; }
+.main-logo-small { max-height: 60px; margin-bottom: 15px; }
+.options-wrapper { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+.option { border: 2px solid #ddd; border-radius: 15px; padding: 20px; width: 150px; cursor: pointer; transition: all 0.2s ease-in-out; display: flex; flex-direction: column; align-items: center; gap: 15px; }
+.option:hover { transform: translateY(-5px); border-color: #e61d2b; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); }
+.option img { width: 80px; border-radius: 5px; }
+.option span { font-size: 1.2em; font-weight: 600; }
+.location-warning { background-color: #fffbe6; border: 1px solid #ffe58f; border-radius: 8px; padding: 10px 15px; margin-top: 15px; }
+.location-warning p { color: #d46b08; margin: 0; font-size: 0.9em; }
+.location-warning strong { color: #cf1322; }
+.main-logo { max-height: 70px; margin-bottom: 15px; }
+#welcome-title { font-size: 1.5em; font-weight: 600; color: #333; margin-bottom: 20px; }
+.auth-tabs { display: flex; justify-content: center; gap: 20px; margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+.auth-tab { text-decoration: none; color: #888; font-weight: 600; font-size: 1.1em; padding: 5px 10px; transition: color 0.2s; }
+.auth-tab.active { color: #e61d2b; border-bottom: 3px solid #e61d2b; }
+form input, form select { width: 100%; padding: 12px 15px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 1em; }
+form button { width: 100%; padding: 12px; border: none; border-radius: 8px; background-color: #e61d2b; color: white; font-size: 1.1em; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+form button:hover { background-color: #c01220; }
+.card-info { font-size: 0.8em; color: #777; margin-top: -10px; margin-bottom: 15px; text-align: left; }
+.card-info a { color: #0d3b66; text-decoration: none; font-weight: 600;}
+.follow-rule { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 20px; color: #555; }
+.follow-rule input[type="checkbox"] { width: auto; margin: 0 10px 0 0; }
+.follow-rule label { margin-bottom: 0; font-size: 0.9em;}
+.info-link { margin-top: 20px; }
+.info-link a { color: #0d3b66; text-decoration: none; font-weight: 600; font-size: 0.9em; }
+.sponsors-footer { margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px; display: flex; justify-content: space-around; align-items: center; }
+.sponsors-footer img { max-height: 35px; opacity: 0.8; transition: opacity 0.2s; }
+.sponsors-footer img:hover { opacity: 1; }
+.notification { padding: 15px; margin-bottom: 20px; border-radius: 8px; text-align: center; font-weight: 600; transition: opacity 0.3s ease-in-out; }
+.notification.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+.notification.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+.form-extra-links { display: flex; justify-content: flex-end; margin-top: -5px; margin-bottom: 15px; font-size: 0.9em; }
+.form-extra-links a { color: #555; text-decoration: none; }
+.form-extra-links a:hover { text-decoration: underline; }
+.menu-header { display: flex; justify-content: space-between; align-items: center; text-align: left; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
+.menu-header h2 { margin: 0; font-size: 1.6em; color: #333; }
+.menu-header p { margin: 0; color: #777; font-size: 0.9em; }
+.points-display { text-align: center; background: #f0f2f5; padding: 10px 20px; border-radius: 10px; border: 2px solid #e61d2b; }
+.points-display span { font-size: 2em; font-weight: 700; color: #e61d2b; display: block; line-height: 1; }
+.points-display small { font-weight: 600; color: #555; }
+.menu-actions { display: flex; flex-direction: column; gap: 15px; }
+.menu-button { width: 100%; padding: 18px; border: none; border-radius: 10px; color: white; font-size: 1.2em; font-weight: 700; cursor: pointer; transition: all 0.2s; letter-spacing: 1px; }
+.menu-button:hover { transform: translateY(-3px); }
+.menu-button#start-game-button { background-color: #e61d2b; }
+.menu-button#start-game-button:hover { box-shadow: 0 6px 15px rgba(230, 29, 43, 0.4); }
+.menu-button#rewards-market-button { background-color: #0d3b66; }
+.menu-button#rewards-market-button:hover { box-shadow: 0 6px 15px rgba(13, 59, 102, 0.4); }
+.menu-button.tertiary { background-color: #6c757d; }
+.menu-button.tertiary:hover { box-shadow: 0 6px 15px rgba(108, 117, 125, 0.4); }
+.promo-code-area { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; }
+.promo-code-area h4 { margin: 0 0 15px 0; color: #555; font-weight: 600; }
+.promo-input-wrapper { display: flex; gap: 10px; }
+#promo-code-input { flex-grow: 1; margin-bottom: 0; text-transform: uppercase; }
+#redeem-code-button { border: none; border-radius: 8px; background-color: #28a745; color: white; font-weight: 600; padding: 0 25px; cursor: pointer; transition: background-color 0.2s; }
+#redeem-code-button:hover { background-color: #218838; }
+#redeem-code-button:disabled { background-color: #ccc; cursor: not-allowed; }
+.menu-footer { margin-top: 30px; }
+.menu-footer a { color: #777; text-decoration: none; font-size: 0.9em; }
+.menu-footer a:hover { text-decoration: underline; }
+.market-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+.market-header h2 { margin: 0; font-size: 1.5em; }
+.back-button { background: #f0f2f5; border: none; font-size: 1.5em; font-weight: bold; color: #333; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; transition: background-color 0.2s; }
+.back-button:hover { background-color: #e0e2e5; }
+.rewards-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; max-height: 60vh; overflow-y: auto; padding: 10px; }
+.reward-card { background: #f9f9f9; border: 1px solid #eee; border-radius: 15px; padding: 20px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.reward-logo { max-height: 50px; margin-bottom: 15px; }
+.reward-description { font-size: 1em; font-weight: 600; color: #333; flex-grow: 1; }
+.reward-points { font-size: 1.4em; font-weight: 700; color: #e61d2b; margin: 15px 0; }
+.claim-button { width: 100%; padding: 12px; border: none; border-radius: 8px; background-color: #0d3b66; color: white; font-size: 1em; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
+.claim-button:hover { background-color: #0a2c4e; }
+.claim-button:disabled { background-color: #ccc; cursor: not-allowed; }
+.purchases-list { display: flex; flex-direction: column; gap: 15px; max-height: 60vh; overflow-y: auto; padding: 10px; }
+.purchase-item { background: #f9f9f9; border: 1px solid #eee; border-radius: 10px; padding: 15px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+.purchase-details { display: flex; flex-direction: column; }
+.purchase-description { font-weight: 600; color: #333; }
+.purchase-date { font-size: 0.8em; color: #888; }
+.purchase-status { padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 0.8em; text-transform: uppercase; }
+.purchase-status.review { background-color: #fffbe6; color: #d46b08; }
+.purchase-status.completed { background-color: #d4edda; color: #155724; }
+.hidden { display: none !important; }
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+.modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 550px; position: relative; max-height: 90vh; overflow-y: auto; }
+.modal-close { position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 2em; cursor: pointer; color: #888; }
+.modal-section-title { font-weight: 700; color: #e61d2b; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top: 20px; margin-bottom: 10px; }
+#modal-rewards-text ul { list-style: none; padding: 0; }
+#modal-rewards-text li { background: #f9f9f9; border-left: 4px solid #0d3b66; margin-bottom: 10px; padding: 10px 15px; border-radius: 5px; }
+#modal-rewards-text li strong { color: #333; }
+#modal-claim-text a { color: #e61d2b; font-weight: bold; }
+.persistent-footer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: rgba(0, 0, 0, 0.5); color: white; text-align: center; padding: 10px 0; font-size: 0.8em; z-index: 1001; }
