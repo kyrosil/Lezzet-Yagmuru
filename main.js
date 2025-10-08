@@ -111,7 +111,10 @@ document.addEventListener('DOMContentLoaded', () => {
     loginTab.addEventListener('click', (e) => switchTab(e, 'login'));
     registerTab.addEventListener('click', (e) => switchTab(e, 'register'));
     howToPlayLink.addEventListener('click', (e) => { e.preventDefault(); infoModal.classList.remove('hidden'); });
-    modalCloseButton.addEventListener('click', () => infoModal.classList.add('hidden');
+    
+    // HATANIN OLDUĞU SATIR DÜZELTİLDİ
+    modalCloseButton.addEventListener('click', () => infoModal.classList.add('hidden')); 
+    
     loginForm.addEventListener('submit', (e) => { e.preventDefault(); console.log("Giriş:", { email: document.getElementById('login-email').value }); });
     registerForm.addEventListener('submit', (e) => { e.preventDefault(); handleRegistration(); });
     
