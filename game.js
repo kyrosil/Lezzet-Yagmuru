@@ -31,8 +31,8 @@ export function createGame(handleGameOver) {
     let player, gameTimer;
     let score = 0;
     let lives = 3;
-    let spawnRate = 2000;
-    let objectSpeed = 150;
+    let spawnRate = 1800; // Zorluk artırıldı: Başlangıç hızı düşürüldü
+    let objectSpeed = 200; // Zorluk artırıldı: Başlangıç hızı artırıldı
     let sceneContext;
 
     const ASSETS = {
@@ -56,9 +56,8 @@ export function createGame(handleGameOver) {
     const POWERUPS = ['kitkat', 'xpress', 'erikli'];
 
     function preload() {
-        // GitHub Pages'de doğru adresi bulması için adres etiketini ekliyoruz
+        // DÜZELTME: Repo adın "Lezzet-Yagmuru" olarak güncellendi.
         if (window.location.href.includes('github.io')) {
-             // Repo adın 'kyrosil' ise bu doğrudur. Değilse, sondaki 'kyrosil' kısmını kendi repo adınla değiştir.
             this.load.setBaseURL('https://kyrosil.github.io/Lezzet-Yagmuru/');
         }
 
@@ -69,8 +68,6 @@ export function createGame(handleGameOver) {
 
     function create() {
         sceneContext = this;
-        
-        // DÜZELTME: setDisplaySize ile sabit boyut veriyoruz
         player = this.physics.add.sprite(400, 550, 'basket').setDisplaySize(120, 100).setCollideWorldBounds(true);
         player.body.immovable = true;
         
@@ -85,7 +82,7 @@ export function createGame(handleGameOver) {
         this.physics.add.overlap(player, this.bonusItems, collectBonusItem, null, this);
         
         gameTimer = this.time.addEvent({ delay: spawnRate, callback: spawnObject, callbackScope: this, loop: true });
-        this.time.addEvent({ delay: Phaser.Math.Between(15000, 30000), callback: spawnBonus, loop: true });
+        this.time.addEvent({ delay: Phaser.Math.Between(15000, 25000), callback: spawnBonus, loop: true });
 
         updateScoreDisplay();
         updateLivesDisplay();
@@ -100,9 +97,10 @@ export function createGame(handleGameOver) {
     function update() {
         if (lives <= 0) return;
         
+        // ZORLUK AYARI GÜNCELLENDİ
         const elapsedTime = this.time.now / 1000;
-        objectSpeed = 150 + (elapsedTime * 5);
-        spawnRate = Math.max(400, 2000 - (elapsedTime * 40));
+        objectSpeed = 200 + (elapsedTime * 8); // Hız artık daha çabuk artıyor
+        spawnRate = Math.max(300, 1800 - (elapsedTime * 50)); // Objeler daha sık düşüyor
         gameTimer.delay = spawnRate;
 
         checkOutOfBounds(this.goodItems, true);
@@ -117,23 +115,24 @@ export function createGame(handleGameOver) {
         const typeChance = Phaser.Math.FloatBetween(0, 1);
         let itemKey, group, width, height;
 
-        if (typeChance < 0.65) { 
+        // ZORLUK AYARI GÜNCELLENDİ: Kötü obje düşme ihtimali arttı
+        if (typeChance < 0.55) { // %55 ihtimalle iyi obje
             itemKey = Phaser.Utils.Array.GetRandom(GOOD_ITEMS); 
             group = sceneContext.goodItems;
-            width = 50; height = 70; // İçecek boyutları
-        } else if (typeChance < 0.85) { 
+            width = 50; height = 70;
+        } else if (typeChance < 0.85) { // %30 ihtimalle kötü obje
             itemKey = Phaser.Utils.Array.GetRandom(BAD_ITEMS); 
             group = sceneContext.badItems;
-            width = 60; height = 60; // Kötü obje boyutları
-        } else { 
+            width = 60; height = 60;
+        } else { // %15 ihtimalle power-up
             itemKey = Phaser.Utils.Array.GetRandom(POWERUPS); 
             group = sceneContext.powerups;
-            width = 50; height = 50; // Power-up boyutları
+            width = 50; height = 50;
         }
         
-        const item = group.create(x, -50, itemKey);
+        // DÜZELTME: Başlangıç pozisyonu ekranın daha da üstü yapıldı (-100)
+        const item = group.create(x, -100, itemKey);
         if (item) {
-            // DÜZELTME: setDisplaySize ile sabit boyut veriyoruz
             item.setDisplaySize(width, height);
             item.setVelocityY(objectSpeed);
             item.setAngularVelocity(Phaser.Math.Between(-100, 100));
@@ -143,9 +142,9 @@ export function createGame(handleGameOver) {
     function spawnBonus() {
         if (lives <= 0 || !sceneContext) return;
         const x = Phaser.Math.Between(50, 750);
-        const bonus = sceneContext.bonusItems.create(x, -50, 'carrefour');
+        // DÜZELTME: Başlangıç pozisyonu ekranın daha da üstü yapıldı (-100)
+        const bonus = sceneContext.bonusItems.create(x, -100, 'carrefour');
         if (bonus) {
-            // DÜZELTME: setDisplaySize ile sabit boyut veriyoruz
             bonus.setDisplaySize(70, 70);
             bonus.setVelocityY(objectSpeed * 2.5);
         }
@@ -187,10 +186,10 @@ export function createGame(handleGameOver) {
         const livesDisplay = document.getElementById('lives-display');
         if (!livesDisplay) return;
         livesDisplay.innerHTML = '';
+        const baseURL = window.location.href.includes('github.io') ? 'https://kyrosil.github.io/Lezzet-Yagmuru/' : '';
         for (let i = 0; i < 3; i++) {
             const lifeImg = document.createElement('img');
-            // Can barındaki resmin yolunu direkt veriyoruz, base URL'den etkilenmesin diye.
-            lifeImg.src = window.location.href.includes('github.io') ? 'https://kyrosil.github.io/kyrosil/normal.png' : 'normal.png';
+            lifeImg.src = baseURL + 'normal.png';
             if(i >= lives) lifeImg.style.opacity = '0.3';
             livesDisplay.appendChild(lifeImg);
         }
