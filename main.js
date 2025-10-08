@@ -140,7 +140,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function updateTexts(lang) {
         const langData = texts[lang]; if (!langData) return;
-        countrySelect.required = (lang === 'en');
         document.getElementById('lang-select-title').textContent = langData.lang_select_title;
         document.getElementById('location-warning-text').innerHTML = langData.location_warning;
         carrefourLogo.src = langData.carrefour_logo_url;
@@ -314,7 +313,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; signInWithEmailAndPassword(auth, email, password).then((userCredential) => { if (!userCredential.user.emailVerified) { signOut(auth); showNotification(texts[currentLang].login_unverified, 'error'); } }).catch(() => { showNotification(texts[currentLang].login_fail, 'error'); }); });
-    registerForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = document.getElementById('register-email').value; const password = document.getElementById('register-password').value; if(currentLang === 'en' && !countrySelect.value) { showNotification("Please select a country.", "error"); return; } const userData = { social: document.getElementById('register-social').value, card_gsm: document.getElementById('register-card-gsm').value, isFollowing: document.getElementById('follow-confirm').checked, region: currentLang, points: 0, createdAt: serverTimestamp() }; if (currentLang === 'en') { userData.country = countrySelect.value; } try { const userCredential = await createUserWithEmailAndPassword(auth, email, password); await sendEmailVerification(userCredential.user); await setDoc(doc(db, "users", userCredential.user.uid), userData); showNotification(texts[currentLang].register_success, 'success'); switchTab({ preventDefault: () => {} }, 'login'); } catch (error) { showNotification(error.message, 'error'); } });
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+        const userData = { social: document.getElementById('register-social').value, card_gsm: document.getElementById('register-card-gsm').value, isFollowing: document.getElementById('follow-confirm').checked, region: currentLang, points: 0, createdAt: serverTimestamp() }; 
+        if (currentLang === 'en') {
+             // Europe kaydından ülke seçimi kaldırıldı.
+        }
+        try { 
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password); 
+            await sendEmailVerification(userCredential.user); 
+            await setDoc(doc(db, "users", userCredential.user.uid), userData); 
+            showNotification(texts[currentLang].register_success, 'success'); 
+            registerForm.reset(); // Formu temizle
+        } catch (error) { 
+            showNotification(error.message, 'error'); 
+        } 
+    });
     resetPasswordForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('reset-email').value; sendPasswordResetEmail(auth, email).then(() => { resetPasswordModal.classList.add('hidden'); showNotification(texts[currentLang].reset_email_sent, 'success'); }).catch((error) => { showNotification(error.message, 'error'); }); });
     
     redeemCodeButton.addEventListener('click', async () => {
