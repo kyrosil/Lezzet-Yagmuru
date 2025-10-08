@@ -103,5 +103,5 @@ form button:hover { background-color: #c01220; }
 #lives-display { display: flex; gap: 10px; }
 #lives-display img { height: 30px; }
 #game-over-screen .modal-content { text-align: center; }
-#final-score-text { font-size: 1.5em; font-weight: 600; margin: 20px 0; }
-#final-score { color: #e61d2b; font-size: 1.5em; font-weight: 700; }
+#final-score-text { font-size: 1.2em; font-weight: 600; margin: 20px 0; }
+#final-score { color: #e61d2b; font-size: 2.5em; font-weight: 700; display: block; }
