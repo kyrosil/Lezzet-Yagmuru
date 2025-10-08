@@ -1,6 +1,3 @@
-// Bu, game.js dosyasının içeriğidir.
-// KOD, ZORLUK VE GÜÇLENDİRME MANTIK HATALARINI KESİN OLARAK ÇÖZMEK İÇİN YENİDEN YAZILDI.
-
 class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: 'GameScene' });
@@ -8,16 +5,14 @@ class GameScene extends Phaser.Scene {
 
     init(data) {
         this.handleGameOver = data.handleGameOver;
-        // KESİN ÇÖZÜM 2: Başlangıç zorluğu artırıldı.
         this.score = 0;
         this.lives = 3;
-        this.spawnRate = 1600; // Daha sık düşüyor
-        this.objectSpeed = 250; // Daha hızlı düşüyor
+        this.spawnRate = 1700; // Başlangıç biraz daha zorlu
+        this.objectSpeed = 220; // Başlangıç biraz daha hızlı
         this.playerSpeed = 600;
         this.isLosingLife = false;
         this.startTime = 0;
         this.nextSpawnTime = 0;
-        // KESİN ÇÖZÜM 1: Güçlendirme için hız çarpanı
         this.speedMultiplier = 1;
     }
 
@@ -25,9 +20,8 @@ class GameScene extends Phaser.Scene {
         const ASSETS = {
             'basket': 'sepet.png', 'coke': 'normal.png', 'coke_zero': 'zero.png',
             'coke_light': 'light.png', 'fanta': 'fanta.png', 'sprite': 'sprite.png',
-            'cappy': 'https://i.imgur.com/832gT26.png', 'pepsi': 'pepsi.png',
-            'bomb': 'bomb.png', 'kitkat': 'kitkat.png', 'xpress': 'xpress.png',
-            'erikli': 'erikli.png', 'carrefour': 'carrefour.png'
+            'pepsi': 'pepsi.png', 'bomb': 'bomb.png', 'kitkat': 'kitkat.png', 
+            'xpress': 'xpress.png', 'erikli': 'erikli.png', 'carrefour': 'carrefour.png'
         };
 
         if (window.location.href.includes('github.io')) {
@@ -66,10 +60,9 @@ class GameScene extends Phaser.Scene {
     update(time, delta) {
         if (this.lives <= 0) return;
         
-        // KESİN ÇÖZÜM 2: Zorluk artışı daha agresif.
         const elapsedTime = (time - this.startTime) / 1000;
-        this.objectSpeed = 250 + (elapsedTime * 10);
-        this.spawnRate = Math.max(250, 1600 - (elapsedTime * 60));
+        this.objectSpeed = (220 + (elapsedTime * 9)) * this.speedMultiplier;
+        this.spawnRate = Math.max(250, 1700 - (elapsedTime * 45));
         
         if (time > this.nextSpawnTime) {
             this.spawnObject();
@@ -84,14 +77,14 @@ class GameScene extends Phaser.Scene {
     spawnObject() {
         if (this.lives <= 0) return;
         const x = Phaser.Math.Between(50, this.scale.width - 50);
-        const spawnY = -100;
+        const spawnY = -200;
         const typeChance = Phaser.Math.FloatBetween(0, 100);
         let itemKey, group, width, height;
 
         if (typeChance < 3) { 
             itemKey = 'carrefour'; group = this.goodItems; width = 90; height = 90;
         } else if (typeChance < 73) {
-            itemKey = Phaser.Utils.Array.GetRandom(['coke', 'coke_zero', 'coke_light', 'fanta', 'sprite', 'cappy']); 
+            itemKey = Phaser.Utils.Array.GetRandom(['coke', 'coke_zero', 'coke_light', 'fanta', 'sprite']); 
             group = this.goodItems; width = 80; height = 100; 
         } else if (typeChance < 90) {
             itemKey = Phaser.Utils.Array.GetRandom(['pepsi', 'bomb']); 
@@ -105,8 +98,7 @@ class GameScene extends Phaser.Scene {
         if (item) {
             group.add(item);
             item.setDisplaySize(width, height);
-            // KESİN ÇÖZÜM 1: Hız, güçlendirme çarpanından etkileniyor.
-            item.setVelocityY(this.objectSpeed * this.speedMultiplier);
+            item.setVelocityY(this.objectSpeed);
             item.setAngularVelocity(Phaser.Math.Between(-100, 100));
         }
     }
@@ -128,16 +120,12 @@ class GameScene extends Phaser.Scene {
     collectPowerup(player, item) {
         const key = item.texture.key;
         item.destroy();
-        
         if (key === 'erikli' && this.lives < 3) {
             this.lives++;
             this.updateLivesDisplay();
-        } else if (key === 'xpress' || key === 'kitkat') {
-            // KESİN ÇÖZÜM 1: Güçlendirmeler artık oyunu yavaşlatıyor.
-            if (this.speedMultiplier === 1) { // Eğer zaten yavaş değilse
-                this.speedMultiplier = 0.5;
-                this.time.delayedCall(3000, () => { this.speedMultiplier = 1; }, [], this);
-            }
+        } else if ((key === 'xpress' || key === 'kitkat') && this.speedMultiplier === 1) {
+            this.speedMultiplier = 0.6; // Yavaşlatma efekti
+            this.time.delayedCall(3000, () => { this.speedMultiplier = 1; }, [], this);
         }
     }
     
@@ -201,19 +189,10 @@ export function createGame(handleGameOver) {
             height: 600
         },
         scene: [GameScene],
-        physics: {
-            default: 'arcade',
-            arcade: {
-                gravity: { y: 0 }
-            }
-        },
+        physics: { default: 'arcade', arcade: { gravity: { y: 0 } } },
         transparent: true
     };
-
-    if (window.phaserGame) {
-        window.phaserGame.destroy(true);
-    }
-    
+    if (window.phaserGame) { window.phaserGame.destroy(true); }
     window.phaserGame = new Phaser.Game(config);
     window.phaserGame.scene.start('GameScene', { handleGameOver: handleGameOver });
 }
