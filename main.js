@@ -25,7 +25,15 @@ const rewardsData = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    const screens = { langSelect: document.getElementById('language-selector-screen'), auth: document.getElementById('auth-screen'), mainMenu: document.getElementById('main-menu-screen'), rewardsMarket: document.getElementById('rewards-market-screen'), myPurchases: document.getElementById('my-purchases-screen'), game: document.getElementById('game-screen') };
+    const screens = { 
+        langSelect: document.getElementById('language-selector-screen'), 
+        auth: document.getElementById('auth-screen'), 
+        mainMenu: document.getElementById('main-menu-screen'), 
+        rewardsMarket: document.getElementById('rewards-market-screen'), 
+        myPurchases: document.getElementById('my-purchases-screen'), 
+        game: document.getElementById('game-screen'),
+        gameOver: document.getElementById('game-over-screen') // Oyun bitti ekranını ekledik
+    };
     const notificationMessage = document.getElementById('notification-message');
     const marketNotification = document.getElementById('market-notification');
     const selectTR = document.getElementById('select-tr');
@@ -69,11 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
             purchases_title: "Satın Alımlarım", no_purchases: "Henüz bir satın alım yapmadınız.", inceleniyor: "İnceleniyor", tanımlandı: "Tanımlandı", loading: "Yükleniyor...", promo_title: "Promosyon Kodu", redeem_button: "Kullan",
             no_more_tries: "Bugünkü oyun hakkın bitti! Yarın tekrar oyna.", game_over_title: "Oyun Bitti!", final_score_text: "Kazandığın Puan:", return_to_menu_button: "Ana Menü'ye Dön",
             instructions_title: "Nasıl Oynanır?", im_ready_button: "Hazırım, Başla!",
-            instructions: [
-                {img: "normal.png", text: "Coca-Cola ürünlerini yakala: <strong>+3 Puan</strong>"}, {img: "carrefour.png", text: "Nadir Carrefour logolarını yakala: <strong>+15 Puan</strong>"},
-                {img: "pepsi.png", text: "Rakip ürünleri ve bombaları YAKALAMA: <strong>-5 Puan & 1 Can Kaybı</strong>"}, {img: "normal.png", text: "İyi objeleri KAÇIRMA: <strong>1 Can Kaybı</strong>"},
-                {img: "kitkat.png", text: "KitKat / Xpress yakala: <strong>Oyun 3 saniyeliğine yavaşlar.</strong>"}, {img: "erikli.png", text: "Erikli yakala: <strong>1 Can kazanırsın.</strong>"},
-            ]
+            instructions: [ {img: "normal.png", text: "Coca-Cola ürünlerini yakala: <strong>+3 Puan</strong>"}, {img: "carrefour.png", text: "Nadir Carrefour logolarını yakala: <strong>+15 Puan</strong>"}, {img: "pepsi.png", text: "Rakip ürünleri ve bombaları YAKALAMA: <strong>-5 Puan & 1 Can Kaybı</strong>"}, {img: "normal.png", text: "İyi objeleri KAÇIRMA: <strong>1 Can Kaybı</strong>"}, {img: "kitkat.png", text: "KitKat / Xpress yakala: <strong>Oyun 3 saniyeliğine yavaşlar.</strong>"}, {img: "erikli.png", text: "Erikli yakala: <strong>1 Can kazanırsın.</strong>"},]
         },
         en: {
             carrefour_logo_url: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-17.png?ssl=1", lang_select_title: "Konumunu Seç / Select Location", location_warning: "<strong>TR:</strong> Ödüllerin doğru tanımlanması için lütfen bölgenizi doğru seçiniz.<br><strong>EN:</strong> Please select your region correctly for prize eligibility.", welcome_title: "Welcome to Taste Rain!", login: "Login", register: "Sign Up", email_placeholder: "Email Address", password_placeholder: "Password", social_placeholder: "Social Media Username", card_gsm_placeholder: "Carrefour Card No / Mobile No",
@@ -89,18 +93,13 @@ document.addEventListener('DOMContentLoaded', () => {
             purchases_title: "My Purchases", no_purchases: "You have not made any purchases yet.", inceleniyor: "Under Review", tanımlandı: "Completed", loading: "Loading...", promo_title: "Promotion Code", redeem_button: "Redeem",
             no_more_tries: "You are out of tries for today! Come back tomorrow.", game_over_title: "Game Over!", final_score_text: "Your Score:", return_to_menu_button: "Return to Main Menu",
             instructions_title: "How to Play?", im_ready_button: "I'm Ready, Start!",
-            instructions: [
-                {img: "normal.png", text: "Catch Coca-Cola products: <strong>+3 Points</strong>"}, {img: "carrefour.png", text: "Catch rare Carrefour logos: <strong>+15 Points</strong>"},
-                {img: "pepsi.png", text: "Don't catch rival products or bombs: <strong>-5 Points & Lose 1 Life</strong>"}, {img: "normal.png", text: "Don't miss good items: <strong>Lose 1 Life</strong>"},
-                {img: "kitkat.png", text: "Catch KitKat / Xpress: <strong>Slows down the game for 3 seconds.</strong>"}, {img: "erikli.png", text: "Catch Erikli: <strong>Gain 1 Life.</strong>"},
-            ]
+            instructions: [ {img: "normal.png", text: "Catch Coca-Cola products: <strong>+3 Points</strong>"}, {img: "carrefour.png", text: "Catch rare Carrefour logos: <strong>+15 Points</strong>"}, {img: "pepsi.png", text: "Don't catch rival products or bombs: <strong>-5 Points & Lose 1 Life</strong>"}, {img: "normal.png", text: "Don't miss good items: <strong>Lose 1 Life</strong>"}, {img: "kitkat.png", text: "Catch KitKat / Xpress: <strong>Slows down the game for 3 seconds.</strong>"}, {img: "erikli.png", text: "Catch Erikli: <strong>Gain 1 Life.</strong>"},]
         }
     };
     
     let currentLang = 'tr';
     let currentUserData = {};
 
-    // DÜZELTME BURADA EKLENDİ
     updateTexts(currentLang);
 
     async function updateDailyTries(userDocRef) {
@@ -214,11 +213,118 @@ document.addEventListener('DOMContentLoaded', () => {
         loginTab.classList.toggle('active', isLogin); registerTab.classList.toggle('active', !isLogin);
         loginForm.classList.toggle('hidden', !isLogin); registerForm.classList.toggle('hidden', isLogin);
     }
-    
-    function renderRewardsMarket() { /* ... */ }
-    async function handlePurchase(event) { /* ... */ }
-    async function renderMyPurchases() { /* ... */ }
-    async function handleGameOver(finalScore) { /* ... */ }
+
+    // --- DOLDURULAN FONKSİYONLAR ---
+
+    function renderRewardsMarket() {
+        const rewardsContainer = document.getElementById('rewards-list-container');
+        if (!rewardsContainer) return;
+        rewardsContainer.innerHTML = ''; // Konteyneri temizle
+        const rewards = rewardsData[currentLang];
+        
+        rewards.forEach(reward => {
+            const rewardElement = document.createElement('div');
+            rewardElement.classList.add('reward-item');
+            rewardElement.innerHTML = `
+                <img src="${reward.logo}" alt="${reward.brand}" class="reward-logo">
+                <div class="reward-details">
+                    <p class="reward-description">${reward.description}</p>
+                    <p class="reward-points">${reward.points} ${texts[currentLang].points_label}</p>
+                </div>
+                <button class="claim-button" data-reward-id="${reward.id}" data-points="${reward.points}">${texts[currentLang].claim_button}</button>
+            `;
+            rewardsContainer.appendChild(rewardElement);
+        });
+
+        document.querySelectorAll('.claim-button').forEach(button => {
+            button.addEventListener('click', handlePurchase);
+        });
+    }
+
+    async function handlePurchase(event) {
+        const rewardId = event.target.dataset.rewardId;
+        const requiredPoints = parseInt(event.target.dataset.points);
+
+        if (currentUserData.points >= requiredPoints) {
+            const userDocRef = doc(db, 'users', currentUserData.uid);
+            const newPoints = currentUserData.points - requiredPoints;
+
+            // Firestore'da puanı güncelle ve yeni satın alım belgesi ekle
+            await updateDoc(userDocRef, { points: newPoints });
+            const purchasesColRef = collection(db, `users/${currentUserData.uid}/purchases`);
+            await addDoc(purchasesColRef, {
+                rewardId: rewardId,
+                purchasedAt: serverTimestamp(),
+                status: 'inceleniyor' // 'Under Review'
+            });
+
+            // Lokal veriyi ve UI'ı güncelle
+            currentUserData.points = newPoints;
+            document.getElementById('user-points').textContent = newPoints;
+            document.getElementById('market-user-points').textContent = newPoints;
+            
+            const successText = texts[currentLang];
+            const mailtoLink = `mailto:odul@example.com?subject=Odul Talebi - ${currentUserData.email}&body=Merhaba, ${rewardId} kodlu odulu talep ediyorum. Kullanici E-postam: ${currentUserData.email}`;
+            showNotification(`${successText.purchase_success_part1} <a href="${mailtoLink}">${successText.purchase_success_part2}</a>`, 'success', marketNotification);
+
+        } else {
+            showNotification(texts[currentLang].insufficient_points, 'error', marketNotification);
+        }
+    }
+
+    async function renderMyPurchases() {
+        const purchasesContainer = document.getElementById('my-purchases-container');
+        if (!purchasesContainer) return;
+        purchasesContainer.innerHTML = `<p>${texts[currentLang].loading}</p>`;
+        
+        const purchasesColRef = collection(db, `users/${currentUserData.uid}/purchases`);
+        const q = query(purchasesColRef, orderBy('purchasedAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+            purchasesContainer.innerHTML = `<p>${texts[currentLang].no_purchases}</p>`;
+            return;
+        }
+
+        purchasesContainer.innerHTML = ''; // Yükleniyor yazısını temizle
+        const allRewards = [...rewardsData.tr, ...rewardsData.en];
+
+        querySnapshot.forEach(doc => {
+            const purchase = doc.data();
+            const rewardDetails = allRewards.find(r => r.id === purchase.rewardId);
+            if (rewardDetails) {
+                const purchaseElement = document.createElement('div');
+                purchaseElement.classList.add('purchase-item');
+                const statusText = texts[currentLang][purchase.status] || purchase.status;
+                purchaseElement.innerHTML = `
+                    <img src="${rewardDetails.logo}" alt="${rewardDetails.brand}" class="purchase-logo">
+                    <div class="purchase-details">
+                        <p class="purchase-description">${rewardDetails.description}</p>
+                        <p class="purchase-status">Durum: <strong>${statusText}</strong></p>
+                    </div>
+                `;
+                purchasesContainer.appendChild(purchaseElement);
+            }
+        });
+    }
+
+    async function handleGameOver(finalScore) {
+        if (!currentUserData.uid || finalScore === 0) {
+            showScreen('mainMenu'); // Skorsuz veya giriş yapmamışsa direkt menüye at
+            return;
+        }
+        
+        const userDocRef = doc(db, 'users', currentUserData.uid);
+        await updateDoc(userDocRef, { points: increment(finalScore) });
+
+        currentUserData.points += finalScore;
+        document.getElementById('user-points').textContent = currentUserData.points;
+        document.getElementById('final-score').textContent = finalScore;
+        
+        showScreen('gameOver'); // Oyun bitti ekranını göster
+    }
+
+    // --- ESKİ KOD DEVAM EDİYOR ---
 
     selectTR.addEventListener('click', () => handleSelection('tr'));
     selectEU.addEventListener('click', () => handleSelection('en'));
@@ -260,7 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     returnToMenuButton.addEventListener('click', () => {
-        document.getElementById('game-over-screen').classList.add('hidden');
+        // Bu buton artık sadece gameOver ekranını gizleyip menüyü gösterecek
+        if(screens.gameOver) screens.gameOver.classList.add('hidden');
         if(window.phaserGame) { window.phaserGame.destroy(true); window.phaserGame = null; }
         showScreen('mainMenu');
         document.getElementById('user-points').textContent = currentUserData.points;
@@ -284,6 +391,5 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     resetPasswordForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('reset-email').value; sendPasswordResetEmail(auth, email).then(() => { resetPasswordModal.classList.add('hidden'); showNotification(texts[currentLang].reset_email_sent, 'success'); }).catch((error) => { showNotification(error.message, 'error'); }); });
     
-    redeemCodeButton.addEventListener('click', async () => { /* ... */ });
-
+    redeemCodeButton.addEventListener('click', async () => { /* Burası hala boş, istenirse doldurulabilir */ });
 });
