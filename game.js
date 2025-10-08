@@ -7,9 +7,8 @@ class GameScene extends Phaser.Scene {
         this.handleGameOver = data.handleGameOver;
         this.score = 0;
         this.lives = 3;
-        this.spawnRate = 1700; 
+        this.spawnRate = 1700;
         this.objectSpeed = 220;
-        this.playerSpeed = 600;
         this.isLosingLife = false;
         this.startTime = 0;
         this.nextSpawnTime = 0;
@@ -23,11 +22,9 @@ class GameScene extends Phaser.Scene {
             'pepsi': 'pepsi.png', 'bomb': 'bomb.png', 'kitkat': 'kitkat.png', 
             'xpress': 'xpress.png', 'erikli': 'erikli.png', 'carrefour': 'carrefour.png'
         };
-
         if (window.location.href.includes('github.io')) {
             this.load.setBaseURL('https://kyrosil.github.io/Lezzet-Yagmuru/');
         }
-
         for (const key in ASSETS) {
             this.load.image(key, ASSETS[key]);
         }
