@@ -3,8 +3,8 @@
 html, body { height: 100%; margin: 0; }
 body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #e61d2b, #0d3b66); color: #333; overflow-x: hidden; }
 #app { display: flex; justify-content: center; align-items: center; width: 100%; min-height: 100%; padding: 60px 20px; }
-.language-selector-container, .auth-container, .main-menu-container, .rewards-market-container { background-color: white; padding: 30px 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); text-align: center; width: 100%; max-width: 500px; transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
-.rewards-market-container { max-width: 700px; padding: 20px;}
+.language-selector-container, .auth-container, .main-menu-container, .rewards-market-container, .my-purchases-container { background-color: white; padding: 30px 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); text-align: center; width: 100%; max-width: 500px; transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
+.rewards-market-container, .my-purchases-container { max-width: 700px; padding: 20px;}
 .language-selector-container.fade-out { transform: scale(0.9); opacity: 0; }
 .main-logo-small { max-height: 60px; margin-bottom: 15px; }
 .options-wrapper { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
@@ -52,6 +52,8 @@ form button:hover { background-color: #c01220; }
 .menu-button#start-game-button:hover { box-shadow: 0 6px 15px rgba(230, 29, 43, 0.4); }
 .menu-button#rewards-market-button { background-color: #0d3b66; }
 .menu-button#rewards-market-button:hover { box-shadow: 0 6px 15px rgba(13, 59, 102, 0.4); }
+.menu-button.tertiary { background-color: #6c757d; }
+.menu-button.tertiary:hover { box-shadow: 0 6px 15px rgba(108, 117, 125, 0.4); }
 .menu-footer { margin-top: 30px; }
 .menu-footer a { color: #777; text-decoration: none; font-size: 0.9em; }
 .menu-footer a:hover { text-decoration: underline; }
@@ -67,6 +69,14 @@ form button:hover { background-color: #c01220; }
 .claim-button { width: 100%; padding: 12px; border: none; border-radius: 8px; background-color: #0d3b66; color: white; font-size: 1em; font-weight: 600; cursor: pointer; transition: background-color 0.2s; }
 .claim-button:hover { background-color: #0a2c4e; }
 .claim-button:disabled { background-color: #ccc; cursor: not-allowed; }
+.purchases-list { display: flex; flex-direction: column; gap: 15px; max-height: 60vh; overflow-y: auto; padding: 10px; }
+.purchase-item { background: #f9f9f9; border: 1px solid #eee; border-radius: 10px; padding: 15px; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+.purchase-details { display: flex; flex-direction: column; }
+.purchase-description { font-weight: 600; color: #333; }
+.purchase-date { font-size: 0.8em; color: #888; }
+.purchase-status { padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 0.8em; text-transform: uppercase; }
+.purchase-status.review { background-color: #fffbe6; color: #d46b08; }
+.purchase-status.completed { background-color: #d4edda; color: #155724; }
 .hidden { display: none !important; }
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
 .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 550px; position: relative; max-height: 90vh; overflow-y: auto; }
