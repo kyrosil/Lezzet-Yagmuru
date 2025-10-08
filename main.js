@@ -92,47 +92,44 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentLang = 'tr';
     let currentUserData = {};
 
-    // ================= DEĞİŞİKLİK BAŞLANGICI =================
-    // Sayfa ilk yüklendiğinde çalışacak ana mantık.
-    // Önce URL'de özel bir durum (yeni kayıt gibi) var mı diye bakar.
-    
-    const urlParams = new URLSearchParams(window.location.search);
-    const status = urlParams.get('status');
-
-    if (status === 'registered') {
-        // Eğer kullanıcı yeni kayıt olduysa, bu blok çalışır.
-        const lang = urlParams.get('lang') || 'tr';
-        currentLang = lang;
-        updateTexts(currentLang); // Önce metinleri yükle
-        showScreen('auth'); // Sonra auth ekranını göster
-        switchTab({preventDefault: () => {}}, 'login'); // Login sekmesini aktif et
-        showNotification(texts[currentLang].register_success, 'success'); // Başarı mesajını göster
-        history.replaceState(null, '', window.location.pathname); // URL'i temizle
-    } else {
-        // URL'de özel bir durum yoksa, normal kullanıcı giriş kontrolü yapılır.
-        onAuthStateChanged(auth, async (user) => {
-            if (user && user.emailVerified) {
-                const userDocRef = doc(db, 'users', user.uid);
-                const triesLeft = await updateDailyTries(userDocRef);
-                const userDocSnap = await getDoc(userDocRef);
-                if (userDocSnap.exists()) {
-                    currentUserData = { uid: user.uid, email: user.email, ...userDocSnap.data(), dailyTriesLeft: triesLeft };
-                    currentLang = currentUserData.region || 'tr';
-                    updateTexts(currentLang);
-                    showScreen('mainMenu');
-                    document.getElementById('user-email-display').textContent = currentUserData.email;
-                    document.getElementById('user-points').textContent = currentUserData.points || 0;
-                    document.getElementById('user-tries').textContent = currentUserData.dailyTriesLeft;
-                } else { 
-                    signOut(auth); 
-                }
-            } else {
-                updateTexts(currentLang); // Metinlerin başta görünmesi için eklendi
-                showScreen('langSelect');
-            }
-        });
+    async function handleSuccessfulLogin(user) {
+        const userDocRef = doc(db, 'users', user.uid);
+        const triesLeft = await updateDailyTries(userDocRef);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+            currentUserData = { uid: user.uid, email: user.email, ...userDocSnap.data(), dailyTriesLeft: triesLeft };
+            currentLang = currentUserData.region || 'tr';
+            updateTexts(currentLang);
+            showScreen('mainMenu');
+            document.getElementById('user-email-display').textContent = currentUserData.email;
+            document.getElementById('user-points').textContent = currentUserData.points || 0;
+            document.getElementById('user-tries').textContent = currentUserData.dailyTriesLeft;
+        } else { 
+            signOut(auth); 
+        }
     }
-    // ================= DEĞİŞİKLİK SONU =================
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status');
+
+    if (status === 'registered') {
+        const lang = urlParams.get('lang') || 'tr';
+        currentLang = lang;
+        updateTexts(currentLang);
+        showScreen('auth');
+        switchTab({preventDefault: () => {}}, 'login');
+        showNotification(texts[currentLang].register_success, 'success');
+        history.replaceState(null, '', window.location.pathname);
+    } else {
+        onAuthStateChanged(auth, async (user) => {
+            if (user && user.emailVerified) {
+                await handleSuccessfulLogin(user);
+            } else {
+                updateTexts(currentLang);
+                showScreen('langSelect');
+            }
+        });
+    }
 
     async function updateDailyTries(userDocRef) {
         const userDocSnap = await getDoc(userDocRef);
@@ -325,7 +322,26 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('user-points').textContent = currentUserData.points;
     });
 
-    loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; signInWithEmailAndPassword(auth, email, password).then((userCredential) => { if (!userCredential.user.emailVerified) { signOut(auth); setTimeout(() => { showNotification(texts[currentLang].login_unverified, 'error'); }, 100); } }).catch(() => { showNotification(texts[currentLang].login_fail, 'error'); }); });
+    loginForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                if (!userCredential.user.emailVerified) {
+                    signOut(auth);
+                    setTimeout(() => {
+                        showNotification(texts[currentLang].login_unverified, 'error');
+                    }, 100);
+                } else {
+                    handleSuccessfulLogin(userCredential.user);
+                }
+            })
+            .catch(() => {
+                showNotification(texts[currentLang].login_fail, 'error');
+            });
+    });
+
     registerForm.addEventListener('submit', async (e) => { 
         e.preventDefault();
         const email = document.getElementById('register-email').value;
@@ -341,6 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showNotification(error.message, 'error'); 
         } 
     });
+
     resetPasswordForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('reset-email').value; sendPasswordResetEmail(auth, email).then(() => { resetPasswordModal.classList.add('hidden'); showNotification(texts[currentLang].reset_email_sent, 'success'); }).catch((error) => { showNotification(error.message, 'error'); }); });
     
     redeemCodeButton.addEventListener('click', async () => {
@@ -352,8 +369,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const redeemPromoCode = httpsCallable(functions, 'redeemPromoCode');
             const result = await redeemPromoCode({ code: code });
             showNotification(result.data.message, 'success');
-            currentUserData.points += result.data.pointsAdded;
-            document.getElementById('user-points').textContent = currentUserData.points;
+            if (result.data.pointsAdded) {
+                currentUserData.points += result.data.pointsAdded;
+                document.getElementById('user-points').textContent = currentUserData.points;
+            }
             promoCodeInput.value = '';
         } catch (error) {
             console.error("Promo kod hatası:", error);
@@ -363,6 +382,4 @@ document.addEventListener('DOMContentLoaded', () => {
             redeemCodeButton.textContent = texts[currentLang].redeem_button;
         }
     });
-    
-    // Bu kısım artık yukarıdaki if/else bloğu ile birleştirildiği için silindi.
 });
