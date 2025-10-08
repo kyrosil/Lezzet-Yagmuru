@@ -1,6 +1,3 @@
-// Bu, game.js dosyasının içeriğidir.
-// KOD, OBJE YARATMA (SPAWN) MANTIĞINDAKİ HATAYI GİDERMEK İÇİN YENİDEN YAZILDI.
-
 class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: 'GameScene' });
@@ -10,26 +7,19 @@ class GameScene extends Phaser.Scene {
         this.handleGameOver = data.handleGameOver;
         this.score = 0;
         this.lives = 3;
-        this.spawnRate = 1800;
         this.objectSpeed = 200;
         this.playerSpeed = 600;
+        this.spawnRate = 1800; // ms cinsinden ilk düşme aralığı
+        this.nextSpawnTime = 0; // Bir sonraki objenin düşeceği zaman
     }
 
     preload() {
         const ASSETS = {
-            'basket': 'sepet.png',
-            'coke': 'normal.png',
-            'coke_zero': 'zero.png',
-            'coke_light': 'light.png',
-            'fanta': 'fanta.png',
-            'sprite': 'sprite.png',
-            'cappy': 'https://i.imgur.com/832gT26.png',
-            'pepsi': 'pepsi.png',
-            'bomb': 'bomb.png',
-            'kitkat': 'kitkat.png',
-            'xpress': 'xpress.png',
-            'erikli': 'erikli.png',
-            'carrefour': 'carrefour.png'
+            'basket': 'sepet.png', 'coke': 'normal.png', 'coke_zero': 'zero.png',
+            'coke_light': 'light.png', 'fanta': 'fanta.png', 'sprite': 'sprite.png',
+            'cappy': 'https://i.imgur.com/832gT26.png', 'pepsi': 'pepsi.png',
+            'bomb': 'bomb.png', 'kitkat': 'kitkat.png', 'xpress': 'xpress.png',
+            'erikli': 'erikli.png', 'carrefour': 'carrefour.png'
         };
 
         if (window.location.href.includes('github.io')) {
@@ -55,7 +45,7 @@ class GameScene extends Phaser.Scene {
         this.physics.add.overlap(this.player, this.powerups, this.collectPowerup, null, this);
         this.physics.add.overlap(this.player, this.bonusItems, this.collectBonusItem, null, this);
         
-        this.gameTimer = this.time.addEvent({ delay: this.spawnRate, callback: this.spawnObject, callbackScope: this, loop: true });
+        // Bonus zamanlayıcısı hala event ile çalışabilir, daha az kritik.
         this.bonusTimer = this.time.addEvent({ delay: Phaser.Math.Between(15000, 25000), callback: this.spawnBonus, callbackScope: this, loop: true });
 
         this.updateScoreDisplay();
@@ -70,15 +60,20 @@ class GameScene extends Phaser.Scene {
         });
     }
 
-    update() {
+    update(time, delta) {
         if (this.lives <= 0) return;
         
         const elapsedTime = this.time.sinceStart / 1000;
         this.objectSpeed = 200 + (elapsedTime * 8);
         this.spawnRate = Math.max(300, 1800 - (elapsedTime * 50));
-        this.gameTimer.delay = this.spawnRate;
+        
+        // YENİ VE GARANTİLİ OBJE DÜŞÜRME MANTIĞI
+        if (time > this.nextSpawnTime) {
+            this.spawnObject();
+            this.nextSpawnTime = time + this.spawnRate;
+        }
 
-        if(this.player.body) {
+        if (this.player.body) {
             const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.input.x, this.player.y);
             if (distance < 4) {
                 this.player.setVelocityX(0);
@@ -92,7 +87,6 @@ class GameScene extends Phaser.Scene {
     }
     
     spawnObject() {
-        if (this.lives <= 0) return;
         const x = Phaser.Math.Between(50, this.scale.width - 50);
         const typeChance = Phaser.Math.FloatBetween(0, 1);
         let itemKey, group, width, height;
@@ -108,11 +102,9 @@ class GameScene extends Phaser.Scene {
             group = this.powerups; width = 70; height = 70; 
         }
         
-        // YENİ VE GARANTİLİ YÖNTEM: Objeyi önce yarat, sonra gruba ekle.
-        // Başlangıç pozisyonu çok daha yukarı alındı (-200).
-        const item = this.physics.add.sprite(x, -200, itemKey);
+        const item = this.physics.add.sprite(x, -100, itemKey);
         if (item) {
-            group.add(item); // Gruba dahil et
+            group.add(item);
             item.setDisplaySize(width, height);
             item.setVelocityY(this.objectSpeed);
             item.setAngularVelocity(Phaser.Math.Between(-100, 100));
@@ -122,9 +114,7 @@ class GameScene extends Phaser.Scene {
     spawnBonus() {
         if (this.lives <= 0) return;
         const x = Phaser.Math.Between(50, this.scale.width - 50);
-
-        // YENİ VE GARANTİLİ YÖNTEM
-        const bonus = this.physics.add.sprite(x, -200, 'carrefour');
+        const bonus = this.physics.add.sprite(x, -100, 'carrefour');
         if (bonus) {
             this.bonusItems.add(bonus);
             bonus.setDisplaySize(90, 90);
@@ -154,7 +144,6 @@ class GameScene extends Phaser.Scene {
     
     checkOutOfBounds(group, isGood) {
         if (!group) return;
-        // Düzeltme: Diziyi kopyalayarak döngü içinde silme sorununu engelle
         const children = group.getChildren();
         children.forEach(item => {
             if (item && item.y > this.scale.height + 100) {
@@ -184,7 +173,6 @@ class GameScene extends Phaser.Scene {
 
     gameOver() {
         this.physics.pause();
-        this.gameTimer.destroy();
         this.bonusTimer.destroy();
         if(this.player) this.player.setTint(0xff0000).setVelocityX(0);
         this.handleGameOver(this.score);
