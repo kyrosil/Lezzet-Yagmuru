@@ -1,12 +1,11 @@
 // Bu, game.js dosyasının içeriğidir.
-// KOD, GÖRSELLERİN YÜKLENMEME SORUNUNU ÇÖZMEK İÇİN GÜNCELLENDİ.
+// KOD, OBJE YARATMA (SPAWN) MANTIĞINDAKİ HATAYI GİDERMEK İÇİN YENİDEN YAZILDI.
 
 class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: 'GameScene' });
     }
 
-    // Oyun her başladığında çağrılan ve tüm değişkenleri sıfırlayan fonksiyon
     init(data) {
         this.handleGameOver = data.handleGameOver;
         this.score = 0;
@@ -33,7 +32,6 @@ class GameScene extends Phaser.Scene {
             'carrefour': 'carrefour.png'
         };
 
-        // DÜZELTME: Repo adın doğru şekilde "Lezzet-Yagmuru" olarak güncellendi.
         if (window.location.href.includes('github.io')) {
             this.load.setBaseURL('https://kyrosil.github.io/Lezzet-Yagmuru/');
         }
@@ -110,8 +108,11 @@ class GameScene extends Phaser.Scene {
             group = this.powerups; width = 70; height = 70; 
         }
         
-        const item = group.create(x, -100, itemKey);
+        // YENİ VE GARANTİLİ YÖNTEM: Objeyi önce yarat, sonra gruba ekle.
+        // Başlangıç pozisyonu çok daha yukarı alındı (-200).
+        const item = this.physics.add.sprite(x, -200, itemKey);
         if (item) {
+            group.add(item); // Gruba dahil et
             item.setDisplaySize(width, height);
             item.setVelocityY(this.objectSpeed);
             item.setAngularVelocity(Phaser.Math.Between(-100, 100));
@@ -121,8 +122,11 @@ class GameScene extends Phaser.Scene {
     spawnBonus() {
         if (this.lives <= 0) return;
         const x = Phaser.Math.Between(50, this.scale.width - 50);
-        const bonus = this.bonusItems.create(x, -100, 'carrefour');
+
+        // YENİ VE GARANTİLİ YÖNTEM
+        const bonus = this.physics.add.sprite(x, -200, 'carrefour');
         if (bonus) {
+            this.bonusItems.add(bonus);
             bonus.setDisplaySize(90, 90);
             bonus.setVelocityY(this.objectSpeed * 2.5);
         }
@@ -135,17 +139,9 @@ class GameScene extends Phaser.Scene {
     collectPowerup(player, item) {
         const key = item.texture.key;
         item.destroy();
-
-        if (key === 'erikli' && this.lives < 3) {
-            this.lives++;
-            this.updateLivesDisplay();
-        } else if (key === 'xpress') {
-            this.playerSpeed = 1000;
-            this.time.delayedCall(5000, () => { this.playerSpeed = 600; }, [], this);
-        } else if (key === 'kitkat') {
-            this.physics.world.timeScale = 0.5;
-            this.time.delayedCall(3000, () => { this.physics.world.timeScale = 1; }, [], this);
-        }
+        if (key === 'erikli' && this.lives < 3) { this.lives++; this.updateLivesDisplay(); } 
+        else if (key === 'xpress') { this.playerSpeed = 1000; this.time.delayedCall(5000, () => { this.playerSpeed = 600; }, [], this); } 
+        else if (key === 'kitkat') { this.physics.world.timeScale = 0.5; this.time.delayedCall(3000, () => { this.physics.world.timeScale = 1; }, [], this); }
     }
     
     loseLife() {
@@ -158,7 +154,9 @@ class GameScene extends Phaser.Scene {
     
     checkOutOfBounds(group, isGood) {
         if (!group) return;
-        group.children.each(item => {
+        // Düzeltme: Diziyi kopyalayarak döngü içinde silme sorununu engelle
+        const children = group.getChildren();
+        children.forEach(item => {
             if (item && item.y > this.scale.height + 100) {
                 if (isGood) this.loseLife();
                 item.destroy();
