@@ -54,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const startGameButton = document.getElementById('start-game-button');
     const returnToMenuButton = document.getElementById('return-to-menu-button');
     const instructionsModal = document.getElementById('instructions-modal');
-    // DÜZELTME: Eksik olan buton tanımı buraya eklendi.
     const imReadyButton = document.getElementById('im-ready-button');
     
     const texts = {
@@ -111,14 +110,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function updateDailyTries(userDocRef) {
         const userDocSnap = await getDoc(userDocRef);
+        if (!userDocSnap.exists()) return 3;
         const userData = userDocSnap.data();
         const today = new Date().toDateString();
         const lastPlayed = userData.lastPlayedDate || null;
         let triesLeft = userData.hasOwnProperty('dailyTriesLeft') ? userData.dailyTriesLeft : 3;
-
         if (today !== lastPlayed) {
             triesLeft = 3;
-            // Sadece Firestore'da güncelleme yap, currentUserData'yı aşağıda güncelle
             await updateDoc(userDocRef, { dailyTriesLeft: 3, lastPlayedDate: today });
         }
         return triesLeft;
@@ -127,16 +125,16 @@ document.addEventListener('DOMContentLoaded', () => {
     onAuthStateChanged(auth, async (user) => {
         if (user && user.emailVerified) {
             const userDocRef = doc(db, 'users', user.uid);
-            const triesLeft = await updateDailyTries(userDocRef); // Önce hakları güncelle
-            const userDocSnap = await getDoc(userDocRef); // Sonra güncel veriyi çek
+            const triesLeft = await updateDailyTries(userDocRef);
+            const userDocSnap = await getDoc(userDocRef);
             if (userDocSnap.exists()) {
-                currentUserData = { uid: user.uid, email: user.email, ...userDocSnap.data() };
+                currentUserData = { uid: user.uid, email: user.email, ...userDocSnap.data(), dailyTriesLeft: triesLeft };
                 currentLang = currentUserData.region || 'tr';
                 updateTexts(currentLang);
                 showScreen('mainMenu');
                 document.getElementById('user-email-display').textContent = currentUserData.email;
                 document.getElementById('user-points').textContent = currentUserData.points || 0;
-                document.getElementById('user-tries').textContent = triesLeft;
+                document.getElementById('user-tries').textContent = currentUserData.dailyTriesLeft;
             } else { signOut(auth); }
         } else {
             showScreen('langSelect');
@@ -210,11 +208,72 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.classList.toggle('hidden', !isLogin); registerForm.classList.toggle('hidden', isLogin);
     }
     
-    function renderRewardsMarket() { /* ... önceki kod ... */ }
-    async function handlePurchase(event) { /* ... önceki kod ... */ }
-    async function renderMyPurchases() { /* ... önceki kod ... */ }
-    async function handleGameOver(finalScore) { /* ... önceki kod ... */ }
+    function renderRewardsMarket() {
+        const rewardsListEl = document.getElementById('rewards-list'); rewardsListEl.innerHTML = '';
+        const langRewards = rewardsData[currentLang] || [];
+        langRewards.forEach(reward => {
+            const canAfford = currentUserData.points >= reward.points;
+            const card = document.createElement('div');
+            card.className = 'reward-card';
+            card.innerHTML = `<img src="${reward.logo}" alt="${reward.brand}" class="reward-logo"><p class="reward-description">${reward.description}</p><div class="reward-points">${reward.points} ${texts[currentLang].points_label}</div><button class="claim-button" data-reward-id="${reward.id}" ${canAfford ? '' : 'disabled'}>${canAfford ? texts[currentLang].claim_button : texts[currentLang].insufficient_points}</button>`;
+            rewardsListEl.appendChild(card);
+        });
+        rewardsListEl.querySelectorAll('.claim-button:not([disabled])').forEach(button => { button.addEventListener('click', handlePurchase); });
+    }
 
+    async function handlePurchase(event) {
+        const rewardId = event.target.dataset.rewardId;
+        const reward = (rewardsData[currentLang] || []).find(r => r.id === rewardId);
+        if (!reward || currentUserData.points < reward.points) { showNotification(texts[currentLang].purchase_fail, 'error', marketNotification); return; }
+        if (confirm(`${reward.points} ${texts[currentLang].points_label} kullanarak bu ödülü almak istediğinizden emin misiniz?`)) {
+            const userDocRef = doc(db, 'users', currentUserData.uid);
+            const claimsColRef = collection(userDocRef, 'claims');
+            try {
+                const newClaimRef = await addDoc(claimsColRef, { rewardId: reward.id, rewardDescription: reward.description, pointsSpent: reward.points, status: 'inceleniyor', claimedAt: serverTimestamp() });
+                await updateDoc(userDocRef, { points: increment(-reward.points) });
+                currentUserData.points -= reward.points;
+                document.getElementById('user-points').textContent = currentUserData.points;
+                document.getElementById('market-user-points').textContent = currentUserData.points;
+                renderRewardsMarket();
+                const mailSubject = encodeURIComponent(`Ödül Talebi: ${reward.description} (#${newClaimRef.id.substring(0,6)})`);
+                const mailBody = encodeURIComponent(`Kullanıcı ID: ${currentUserData.uid}\nKullanıcı E-posta: ${currentUserData.email}\n\nTalep Edilen Ödül:\n- ID: ${newClaimRef.id}\n- Açıklama: ${reward.description}\n- Puan Değeri: ${reward.points}\n\nLütfen bu ödülü Carrefour kartıma/GSM numarama tanımlayın:\n- Kart/GSM No: ${currentUserData.card_gsm}`);
+                const mailtoLink = `mailto:gifts@kyrosil.eu?subject=${mailSubject}&body=${mailBody}`;
+                const successMessage = `${texts[currentLang].purchase_success_part1} <a href="${mailtoLink}" target="_blank">${texts[currentLang].purchase_success_part2}</a>`;
+                showNotification(successMessage, 'success', marketNotification);
+            } catch (error) { console.error("Satın alım hatası:", error); showNotification("Bir hata oluştu.", 'error', marketNotification); }
+        }
+    }
+    
+    async function renderMyPurchases() {
+        const purchasesListEl = document.getElementById('purchases-list');
+        purchasesListEl.innerHTML = `<p>${texts[currentLang].loading || 'Yükleniyor...'}</p>`;
+        const claimsRef = collection(db, 'users', currentUserData.uid, 'claims');
+        const q = query(claimsRef, orderBy('claimedAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) { purchasesListEl.innerHTML = `<p>${texts[currentLang].no_purchases}</p>`; return; }
+        purchasesListEl.innerHTML = '';
+        querySnapshot.forEach((doc) => {
+            const claim = doc.data();
+            const claimDate = claim.claimedAt ? claim.claimedAt.toDate().toLocaleDateString() : '';
+            const statusText = texts[currentLang][claim.status] || claim.status;
+            const item = document.createElement('div');
+            item.className = 'purchase-item';
+            item.innerHTML = `<div class="purchase-details"><span class="purchase-description">${claim.rewardDescription}</span><span class="purchase-date">${claimDate}</span></div><div class="purchase-status ${claim.status === 'tanımlandı' ? 'completed' : 'review'}">${statusText}</div>`;
+            purchasesListEl.appendChild(item);
+        });
+    }
+
+    async function handleGameOver(finalScore) {
+        document.getElementById('final-score').textContent = finalScore;
+        document.getElementById('game-over-screen').classList.remove('hidden');
+        if (finalScore > 0) {
+            const userDocRef = doc(db, 'users', currentUserData.uid);
+            await updateDoc(userDocRef, { points: increment(finalScore) });
+            currentUserData.points += finalScore;
+        }
+    }
+
+    // --- Olay Yöneticileri ---
     selectTR.addEventListener('click', () => handleSelection('tr'));
     selectEU.addEventListener('click', () => handleSelection('en'));
     loginTab.addEventListener('click', (e) => switchTab(e, 'login'));
@@ -232,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
     startGameButton.addEventListener('click', async () => {
         const userDocRef = doc(db, 'users', currentUserData.uid);
         const triesLeft = await updateDailyTries(userDocRef);
-        currentUserData.dailyTriesLeft = triesLeft; // Update local data
+        currentUserData.dailyTriesLeft = triesLeft;
         document.getElementById('user-tries').textContent = triesLeft;
 
         if (triesLeft > 0) {
@@ -255,29 +314,37 @@ document.addEventListener('DOMContentLoaded', () => {
         createGame(handleGameOver);
     });
     
-    returnToMenuButton.addEventListener('click', () => { /* ... önceki kod ... */ });
-
-    loginForm.addEventListener('submit', (e) => { /* ... önceki kod ... */ });
-    registerForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('register-email').value;
-        const password = document.getElementById('register-password').value;
-        if(currentLang === 'en' && !countrySelect.value) {
-            showNotification("Please select a country.", "error");
-            return;
-        }
-        const userData = { social: document.getElementById('register-social').value, card_gsm: document.getElementById('register-card-gsm').value, isFollowing: document.getElementById('follow-confirm').checked, region: currentLang, points: 0, createdAt: serverTimestamp() }; 
-        if (currentLang === 'en') { userData.country = countrySelect.value; } 
-        try { 
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password); 
-            await sendEmailVerification(userCredential.user); 
-            await setDoc(doc(db, "users", userCredential.user.uid), userData); 
-            showNotification(texts[currentLang].register_success, 'success'); 
-            switchTab({ preventDefault: () => {} }, 'login'); 
-        } catch (error) { showNotification(error.message, 'error'); } 
+    returnToMenuButton.addEventListener('click', () => {
+        document.getElementById('game-over-screen').classList.add('hidden');
+        if(window.phaserGame) { window.phaserGame.destroy(true); window.phaserGame = null; }
+        showScreen('mainMenu');
+        document.getElementById('user-points').textContent = currentUserData.points;
     });
-    resetPasswordForm.addEventListener('submit', (e) => { /* ... önceki kod ... */ });
-    redeemCodeButton.addEventListener('click', async () => { /* ... önceki kod ... */ });
+
+    loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; signInWithEmailAndPassword(auth, email, password).then((userCredential) => { if (!userCredential.user.emailVerified) { signOut(auth); showNotification(texts[currentLang].login_unverified, 'error'); } }).catch(() => { showNotification(texts[currentLang].login_fail, 'error'); }); });
+    registerForm.addEventListener('submit', async (e) => { e.preventDefault(); const email = document.getElementById('register-email').value; const password = document.getElementById('register-password').value; if(currentLang === 'en' && !countrySelect.value) { showNotification("Please select a country.", "error"); return; } const userData = { social: document.getElementById('register-social').value, card_gsm: document.getElementById('register-card-gsm').value, isFollowing: document.getElementById('follow-confirm').checked, region: currentLang, points: 0, createdAt: serverTimestamp() }; if (currentLang === 'en') { userData.country = countrySelect.value; } try { const userCredential = await createUserWithEmailAndPassword(auth, email, password); await sendEmailVerification(userCredential.user); await setDoc(doc(db, "users", userCredential.user.uid), userData); showNotification(texts[currentLang].register_success, 'success'); switchTab({ preventDefault: () => {} }, 'login'); } catch (error) { showNotification(error.message, 'error'); } });
+    resetPasswordForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('reset-email').value; sendPasswordResetEmail(auth, email).then(() => { resetPasswordModal.classList.add('hidden'); showNotification(texts[currentLang].reset_email_sent, 'success'); }).catch((error) => { showNotification(error.message, 'error'); }); });
+    
+    redeemCodeButton.addEventListener('click', async () => {
+        const code = promoCodeInput.value.trim().toUpperCase();
+        if (!code) return;
+        redeemCodeButton.disabled = true;
+        redeemCodeButton.textContent = '...';
+        try {
+            const redeemPromoCode = httpsCallable(functions, 'redeemPromoCode');
+            const result = await redeemPromoCode({ code: code });
+            showNotification(result.data.message, 'success');
+            currentUserData.points += result.data.pointsAdded;
+            document.getElementById('user-points').textContent = currentUserData.points;
+            promoCodeInput.value = '';
+        } catch (error) {
+            console.error("Promo kod hatası:", error);
+            showNotification(error.message, 'error');
+        } finally {
+            redeemCodeButton.disabled = false;
+            redeemCodeButton.textContent = texts[currentLang].redeem_button;
+        }
+    });
 
     updateTexts(currentLang);
 });
