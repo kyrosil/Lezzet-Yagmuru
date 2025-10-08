@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 * { box-sizing: border-box; }
 html, body { height: 100%; margin: 0; }
-body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #e61d2b, #0d3b66); color: #333; overflow-x: hidden; }
+body { font-family: 'Poppins', sans-serif; background: linear-gradient(135deg, #e61d2b, #0d3b66); color: #333; overflow: hidden; }
 #app { display: flex; justify-content: center; align-items: center; width: 100%; min-height: 100%; padding: 60px 20px; }
 .language-selector-container, .auth-container, .main-menu-container, .rewards-market-container, .my-purchases-container { background-color: white; padding: 30px 40px; border-radius: 20px; box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); text-align: center; width: 100%; max-width: 500px; transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; }
 .rewards-market-container, .my-purchases-container { max-width: 700px; padding: 20px;}
@@ -42,9 +42,14 @@ form button:hover { background-color: #c01220; }
 .menu-header { display: flex; justify-content: space-between; align-items: center; text-align: left; border-bottom: 1px solid #eee; padding-bottom: 20px; margin-bottom: 30px; }
 .menu-header h2 { margin: 0; font-size: 1.6em; color: #333; }
 .menu-header p { margin: 0; color: #777; font-size: 0.9em; }
-.points-display { text-align: center; background: #f0f2f5; padding: 10px 20px; border-radius: 10px; border: 2px solid #e61d2b; }
-.points-display span { font-size: 2em; font-weight: 700; color: #e61d2b; display: block; line-height: 1; }
-.points-display small { font-weight: 600; color: #555; }
+.header-stats { display: flex; gap: 15px; }
+.points-display, .tries-display { text-align: center; background: #f0f2f5; padding: 10px 20px; border-radius: 10px; }
+.points-display { border: 2px solid #e61d2b; }
+.tries-display { border: 2px solid #0d3b66; }
+.points-display span, .tries-display span { font-size: 2em; font-weight: 700; display: block; line-height: 1; }
+.points-display span { color: #e61d2b; }
+.tries-display span { color: #0d3b66; }
+.points-display small, .tries-display small { font-weight: 600; color: #555; }
 .menu-actions { display: flex; flex-direction: column; gap: 15px; }
 .menu-button { width: 100%; padding: 18px; border: none; border-radius: 10px; color: white; font-size: 1.2em; font-weight: 700; cursor: pointer; transition: all 0.2s; letter-spacing: 1px; }
 .menu-button:hover { transform: translateY(-3px); }
@@ -84,6 +89,9 @@ form button:hover { background-color: #c01220; }
 .purchase-status { padding: 5px 12px; border-radius: 20px; font-weight: 700; font-size: 0.8em; text-transform: uppercase; }
 .purchase-status.review { background-color: #fffbe6; color: #d46b08; }
 .purchase-status.completed { background-color: #d4edda; color: #155724; }
+.instructions-list { list-style: none; padding: 0; margin: 20px 0; text-align: left; }
+.instructions-list li { display: flex; align-items: center; margin-bottom: 15px; font-size: 1.1em; }
+.instructions-list img { width: 50px; margin-right: 15px; }
 .hidden { display: none !important; }
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); display: flex; justify-content: center; align-items: center; z-index: 1000; }
 .modal-content { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 550px; position: relative; max-height: 90vh; overflow-y: auto; }
@@ -94,7 +102,7 @@ form button:hover { background-color: #c01220; }
 #modal-rewards-text li strong { color: #333; }
 #modal-claim-text a { color: #e61d2b; font-weight: bold; }
 .persistent-footer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: rgba(0, 0, 0, 0.5); color: white; text-align: center; padding: 10px 0; font-size: 0.8em; z-index: 1001; }
-#game-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #74b9ff; }
+#game-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to bottom, #87CEEB, #FFFFFF); }
 #game-container { display: flex; justify-content: center; align-items: center; width: 100%; height: 100%; }
 #game-ui { position: fixed; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; color: white; }
 .ui-element { background: rgba(0, 0, 0, 0.5); padding: 10px 20px; border-radius: 10px; text-align: center; }
