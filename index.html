@@ -60,10 +60,26 @@
                 <main class="purchases-list" id="purchases-list"></main>
             </div>
         </div>
+        <div id="game-screen" class="hidden">
+            <div id="game-container"></div>
+            <div id="game-ui">
+                <div class="ui-element" id="score-display"><span id="score-text">0</span><small id="score-label">PUAN</small></div>
+                <div class="ui-element" id="lives-display"></div>
+            </div>
+            <div id="game-over-screen" class="modal-overlay hidden">
+                <div class="modal-content">
+                    <h2 id="game-over-title"></h2>
+                    <p id="final-score-text"><span id="final-score">0</span></p>
+                    <p id="game-over-message"></p>
+                    <button class="menu-button" id="return-to-menu-button"></button>
+                </div>
+            </div>
+        </div>
         <div id="info-modal" class="modal-overlay hidden"><div class="modal-content"><button class="modal-close" id="modal-close-button">&times;</button><h2 id="modal-title"></h2><div id="modal-rules-title" class="modal-section-title"></div><p id="modal-rules-text"></p><div id="modal-rewards-title" class="modal-section-title"></div><div id="modal-rewards-text"></div><div id="modal-claim-title" class="modal-section-title"></div><p id="modal-claim-text"></p></div></div>
         <div id="reset-password-modal" class="modal-overlay hidden"><div class="modal-content"><button class="modal-close" id="reset-modal-close-button">&times;</button><h2 id="reset-modal-title"></h2><p id="reset-modal-text"></p><form id="reset-password-form"><input type="email" id="reset-email" required><button type="submit" id="reset-button"></button></form></div></div>
     </div>
     <footer class="persistent-footer">© 2025 Kyrosil. All Rights Reserved.</footer>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.min.js"></script>
     <script type="module" src="main.js"></script>
 </body>
 </html>
