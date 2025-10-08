@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const startGameButton = document.getElementById('start-game-button');
     const returnToMenuButton = document.getElementById('return-to-menu-button');
     const instructionsModal = document.getElementById('instructions-modal');
+    // DÜZELTME: Eksik olan buton tanımı buraya eklendi.
     const imReadyButton = document.getElementById('im-ready-button');
     
     const texts = {
@@ -117,25 +118,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (today !== lastPlayed) {
             triesLeft = 3;
+            // Sadece Firestore'da güncelleme yap, currentUserData'yı aşağıda güncelle
             await updateDoc(userDocRef, { dailyTriesLeft: 3, lastPlayedDate: today });
         }
-        currentUserData.dailyTriesLeft = triesLeft;
         return triesLeft;
     }
 
     onAuthStateChanged(auth, async (user) => {
         if (user && user.emailVerified) {
             const userDocRef = doc(db, 'users', user.uid);
-            const userDocSnap = await getDoc(userDocRef);
+            const triesLeft = await updateDailyTries(userDocRef); // Önce hakları güncelle
+            const userDocSnap = await getDoc(userDocRef); // Sonra güncel veriyi çek
             if (userDocSnap.exists()) {
                 currentUserData = { uid: user.uid, email: user.email, ...userDocSnap.data() };
                 currentLang = currentUserData.region || 'tr';
-                await updateDailyTries(userDocRef);
                 updateTexts(currentLang);
                 showScreen('mainMenu');
                 document.getElementById('user-email-display').textContent = currentUserData.email;
                 document.getElementById('user-points').textContent = currentUserData.points || 0;
-                document.getElementById('user-tries').textContent = currentUserData.dailyTriesLeft;
+                document.getElementById('user-tries').textContent = triesLeft;
             } else { signOut(auth); }
         } else {
             showScreen('langSelect');
@@ -214,14 +215,24 @@ document.addEventListener('DOMContentLoaded', () => {
     async function renderMyPurchases() { /* ... önceki kod ... */ }
     async function handleGameOver(finalScore) { /* ... önceki kod ... */ }
 
-    // --- Olay Yöneticileri ---
     selectTR.addEventListener('click', () => handleSelection('tr'));
     selectEU.addEventListener('click', () => handleSelection('en'));
-    // ... diğer tüm olay yöneticileri ...
+    loginTab.addEventListener('click', (e) => switchTab(e, 'login'));
+    registerTab.addEventListener('click', (e) => switchTab(e, 'register'));
+    howToPlayLink.addEventListener('click', (e) => { e.preventDefault(); infoModal.classList.remove('hidden'); });
+    modalCloseButton.addEventListener('click', () => infoModal.classList.add('hidden'));
+    forgotPasswordLink.addEventListener('click', (e) => { e.preventDefault(); resetPasswordModal.classList.remove('hidden'); });
+    resetModalCloseButton.addEventListener('click', () => resetPasswordModal.classList.add('hidden'));
+    logoutButton.addEventListener('click', (e) => { e.preventDefault(); if(window.phaserGame){ window.phaserGame.destroy(true); window.phaserGame = null;} signOut(auth); });
+    rewardsMarketButton.addEventListener('click', () => { showScreen('rewardsMarket'); document.getElementById('market-user-points').textContent = currentUserData.points || 0; renderRewardsMarket(); });
+    backToMenuButton.addEventListener('click', () => { showScreen('mainMenu'); document.getElementById('user-points').textContent = currentUserData.points; });
+    myPurchasesButton.addEventListener('click', () => { showScreen('myPurchases'); renderMyPurchases(); });
+    purchasesBackButton.addEventListener('click', () => { showScreen('mainMenu'); });
 
     startGameButton.addEventListener('click', async () => {
         const userDocRef = doc(db, 'users', currentUserData.uid);
         const triesLeft = await updateDailyTries(userDocRef);
+        currentUserData.dailyTriesLeft = triesLeft; // Update local data
         document.getElementById('user-tries').textContent = triesLeft;
 
         if (triesLeft > 0) {
@@ -236,7 +247,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     imReadyButton.addEventListener('click', async () => {
         instructionsModal.classList.add('hidden');
-        await updateDoc(doc(db, 'users', currentUserData.uid), { dailyTriesLeft: increment(-1) });
+        const userDocRef = doc(db, 'users', currentUserData.uid);
+        await updateDoc(userDocRef, { dailyTriesLeft: increment(-1) });
         currentUserData.dailyTriesLeft--;
         document.getElementById('user-tries').textContent = currentUserData.dailyTriesLeft;
         showScreen('game');
@@ -246,27 +258,23 @@ document.addEventListener('DOMContentLoaded', () => {
     returnToMenuButton.addEventListener('click', () => { /* ... önceki kod ... */ });
 
     loginForm.addEventListener('submit', (e) => { /* ... önceki kod ... */ });
-    registerForm.addEventListener('submit', async (e) => { 
-        e.preventDefault(); 
-        const email = document.getElementById('register-email').value; 
-        const password = document.getElementById('register-password').value; 
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('register-email').value;
+        const password = document.getElementById('register-password').value;
+        if(currentLang === 'en' && !countrySelect.value) {
+            showNotification("Please select a country.", "error");
+            return;
+        }
         const userData = { social: document.getElementById('register-social').value, card_gsm: document.getElementById('register-card-gsm').value, isFollowing: document.getElementById('follow-confirm').checked, region: currentLang, points: 0, createdAt: serverTimestamp() }; 
-        if (currentLang === 'en') { 
-            userData.country = countrySelect.value;
-            if (!userData.country) { 
-                showNotification("Please select a country.", "error"); 
-                return; 
-            }
-        } 
+        if (currentLang === 'en') { userData.country = countrySelect.value; } 
         try { 
             const userCredential = await createUserWithEmailAndPassword(auth, email, password); 
             await sendEmailVerification(userCredential.user); 
             await setDoc(doc(db, "users", userCredential.user.uid), userData); 
             showNotification(texts[currentLang].register_success, 'success'); 
             switchTab({ preventDefault: () => {} }, 'login'); 
-        } catch (error) { 
-            showNotification(error.message, 'error'); 
-        } 
+        } catch (error) { showNotification(error.message, 'error'); } 
     });
     resetPasswordForm.addEventListener('submit', (e) => { /* ... önceki kod ... */ });
     redeemCodeButton.addEventListener('click', async () => { /* ... önceki kod ... */ });
