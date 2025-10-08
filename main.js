@@ -312,8 +312,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('user-points').textContent = currentUserData.points;
     });
 
-    loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; signInWithEmailAndPassword(auth, email, password).then((userCredential) => { if (!userCredential.user.emailVerified) { signOut(auth); showNotification(texts[currentLang].login_unverified, 'error'); } }).catch(() => { showNotification(texts[currentLang].login_fail, 'error'); }); });
-    
+    loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; signInWithEmailAndPassword(auth, email, password).then((userCredential) => { if (!userCredential.user.emailVerified) { signOut(auth); setTimeout(() => { showNotification(texts[currentLang].login_unverified, 'error'); }, 100); } }).catch(() => { showNotification(texts[currentLang].login_fail, 'error'); }); });
     registerForm.addEventListener('submit', async (e) => { 
         e.preventDefault();
         const email = document.getElementById('register-email').value;
@@ -323,13 +322,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password); 
             await sendEmailVerification(userCredential.user);
             await setDoc(doc(db, "users", userCredential.user.uid), userData); 
-            
-            blockAuthListener = true;
             await signOut(auth);
-            blockAuthListener = false;
-
-            showNotification(texts[currentLang].register_success, 'success'); 
-            registerForm.reset();
+            window.location.href = window.location.pathname + '?status=registered&lang=' + currentLang;
         } catch (error) { 
             showNotification(error.message, 'error'); 
         } 
@@ -357,5 +351,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    updateTexts(currentLang);
+    // Sayfa Yüklendiğinde URL'i kontrol et
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status');
+    const lang = urlParams.get('lang');
+    if (status === 'registered') {
+        currentLang = lang || 'tr';
+        showScreen('auth');
+        switchTab({preventDefault: () => {}}, 'login');
+        updateTexts(currentLang);
+        showNotification(texts[currentLang].register_success, 'success');
+        history.replaceState(null, '', window.location.pathname); // URL'i temizle
+    } else {
+        updateTexts(currentLang);
+    }
 });
