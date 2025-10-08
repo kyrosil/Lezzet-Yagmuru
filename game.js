@@ -29,8 +29,9 @@ export function createGame(handleGameOver) {
     window.phaserGame = new Phaser.Game(config);
     
     let player, gameTimer, bonusTimer;
-    let score, lives, spawnRate, objectSpeed;
+    let score, lives, spawnRate, objectSpeed, startTime;
     let sceneContext;
+    let isLosingLife = false; // Can kaybı koruması
 
     const ASSETS = {
         'basket': 'sepet.png', 'coke': 'normal.png', 'coke_zero': 'zero.png',
@@ -56,11 +57,13 @@ export function createGame(handleGameOver) {
     function create() {
         sceneContext = this;
 
-        // DÜZELTME 1: Her oyun başladığında tüm değerler sıfırlanıyor.
+        // KESİN ÇÖZÜM 1: Her oyun başladığında tüm değerler sıfırlanıyor.
         score = 0;
         lives = 3;
         spawnRate = 1800;
         objectSpeed = 200;
+        startTime = this.time.now; // Zaman sayacını sıfırla
+        isLosingLife = false;
         
         player = this.physics.add.sprite(400, 550, 'basket').setDisplaySize(130, 110).setCollideWorldBounds(true);
         player.body.immovable = true;
@@ -79,7 +82,8 @@ export function createGame(handleGameOver) {
         gameTimer = this.time.addEvent({ delay: spawnRate, callback: spawnObject, callbackScope: this, loop: true });
         
         if (bonusTimer) bonusTimer.destroy();
-        bonusTimer = this.time.addEvent({ delay: Phaser.Math.Between(15000, 25000), callback: spawnBonus, loop: true });
+        // Carrefour logosu daha nadir düşecek
+        bonusTimer = this.time.addEvent({ delay: Phaser.Math.Between(30000, 60000), callback: spawnBonus, loop: true });
 
         updateScoreDisplay();
         updateLivesDisplay();
@@ -91,10 +95,11 @@ export function createGame(handleGameOver) {
         });
     }
 
-    function update(time, delta) {
+    function update() {
         if (lives <= 0) return;
         
-        const elapsedTime = this.time.now / 1000;
+        // KESİN ÇÖZÜM 1 (Devamı): Zaman artık oyunun başlangıcından itibaren sayılıyor.
+        const elapsedTime = (this.time.now - startTime) / 1000;
         objectSpeed = 200 + (elapsedTime * 8);
         spawnRate = Math.max(300, 1800 - (elapsedTime * 50));
         gameTimer.delay = spawnRate;
@@ -122,10 +127,11 @@ export function createGame(handleGameOver) {
             group = sceneContext.powerups; width = 70; height = 70; 
         }
         
-        // DÜZELTME 2: Başlangıç pozisyonu artık dinamik olarak ekranın tepesinin üstü.
+        // KESİN ÇÖZÜM 2: Başlangıç pozisyonu artık her zaman ekranın tepesinin üstü.
         const spawnY = sceneContext.cameras.main.worldView.y - 100;
-        const item = group.create(x, spawnY, itemKey);
+        const item = sceneContext.physics.add.sprite(x, spawnY, itemKey);
         if (item) {
+            group.add(item);
             item.setDisplaySize(width, height);
             item.setVelocityY(objectSpeed);
             item.setAngularVelocity(Phaser.Math.Between(-100, 100));
@@ -136,46 +142,57 @@ export function createGame(handleGameOver) {
         if (lives <= 0 || !sceneContext) return;
         const x = Phaser.Math.Between(50, sceneContext.scale.width - 50);
         const spawnY = sceneContext.cameras.main.worldView.y - 100;
-        const bonus = sceneContext.bonusItems.create(x, spawnY, 'carrefour');
+        const bonus = sceneContext.physics.add.sprite(x, spawnY, 'carrefour');
         if (bonus) {
+            sceneContext.bonusItems.add(bonus);
             bonus.setDisplaySize(90, 90);
             bonus.setVelocityY(objectSpeed * 2.5);
         }
     }
 
     function collectGoodItem(player, item) { item.destroy(); score += 5; updateScoreDisplay(); }
-    function collectBonusItem(player, item) { item.destroy(); score += 30; updateScoreDisplay(); }
+    function collectBonusItem(player, item) {
+        item.destroy();
+        score += 30;
+        updateScoreDisplay();
+        // Bonus efekti
+        sceneContext.cameras.main.flash(200, 255, 255, 0);
+    }
     function hitBadItem(player, item) { item.destroy(); score = Math.max(0, score - 5); updateScoreDisplay(); loseLife(); }
     
     function collectPowerup(player, item) {
         const key = item.texture.key;
         item.destroy();
         
-        // DÜZELTME 3: Tüm güçlendirmeler artık çalışıyor.
         if (key === 'erikli' && lives < 3) {
             lives++;
             updateLivesDisplay();
         } else if (key === 'xpress' || key === 'kitkat') {
-            sceneContext.physics.world.timeScale = 0.5; // Her şeyi yavaşlat
+            sceneContext.physics.world.timeScale = 0.5;
             sceneContext.time.delayedCall(3000, () => {
                 if (sceneContext && sceneContext.physics) {
-                    sceneContext.physics.world.timeScale = 1; // 3 saniye sonra normale döndür
+                    sceneContext.physics.world.timeScale = 1;
                 }
             }, [], sceneContext);
         }
     }
     
+    // KESİN ÇÖZÜM 4: Can kaybetme mantığı artık daha güvenli.
     function loseLife() {
-        if (lives > 0) {
+        if (lives > 0 && !isLosingLife) {
+            isLosingLife = true;
             lives--;
             updateLivesDisplay();
+            // Ekranı kırmızı flaşla
+            sceneContext.cameras.main.flash(200, 255, 0, 0);
+            sceneContext.time.delayedCall(200, () => { isLosingLife = false; }); // Kısa bir koruma süresi
             if (lives <= 0) gameOver();
         }
     }
     
     function checkOutOfBounds(group, isGood) {
         if (!group || !sceneContext) return;
-        const children = [...group.getChildren()]; // Diziyi kopyala
+        const children = [...group.getChildren()];
         children.forEach(item => {
             if (item && item.y > sceneContext.scale.height + 100) {
                 if (isGood) loseLife();
