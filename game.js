@@ -7,8 +7,8 @@ class GameScene extends Phaser.Scene {
         this.handleGameOver = data.handleGameOver;
         this.score = 0;
         this.lives = 3;
-        this.spawnRate = 1700; // Başlangıç biraz daha zorlu
-        this.objectSpeed = 220; // Başlangıç biraz daha hızlı
+        this.spawnRate = 1700; 
+        this.objectSpeed = 220;
         this.playerSpeed = 600;
         this.isLosingLife = false;
         this.startTime = 0;
@@ -106,10 +106,10 @@ class GameScene extends Phaser.Scene {
     collectGoodItem(player, item) {
         const key = item.texture.key;
         if (key === 'carrefour') {
-            this.score += 30;
+            this.score += 15;
             this.cameras.main.flash(100, 255, 255, 255);
         } else {
-            this.score += 5;
+            this.score += 3;
         }
         item.destroy();
         this.updateScoreDisplay();
@@ -124,7 +124,7 @@ class GameScene extends Phaser.Scene {
             this.lives++;
             this.updateLivesDisplay();
         } else if ((key === 'xpress' || key === 'kitkat') && this.speedMultiplier === 1) {
-            this.speedMultiplier = 0.6; // Yavaşlatma efekti
+            this.speedMultiplier = 0.6;
             this.time.delayedCall(3000, () => { this.speedMultiplier = 1; }, [], this);
         }
     }
