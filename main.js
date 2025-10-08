@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             no_more_tries: "Bugünkü oyun hakkın bitti! Yarın tekrar oyna.", game_over_title: "Oyun Bitti!", final_score_text: "Kazandığın Puan:", return_to_menu_button: "Ana Menü'ye Dön",
             instructions_title: "Nasıl Oynanır?", im_ready_button: "Hazırım, Başla!",
             instructions: [
-                {img: "normal.png", text: "Coca-Cola ürünlerini yakala: <strong>+5 Puan</strong>"}, {img: "carrefour.png", text: "Nadir Carrefour logolarını yakala: <strong>+30 Puan</strong>"},
+                {img: "normal.png", text: "Coca-Cola ürünlerini yakala: <strong>+3 Puan</strong>"}, {img: "carrefour.png", text: "Nadir Carrefour logolarını yakala: <strong>+15 Puan</strong>"},
                 {img: "pepsi.png", text: "Rakip ürünleri ve bombaları YAKALAMA: <strong>-5 Puan & 1 Can Kaybı</strong>"}, {img: "normal.png", text: "İyi objeleri KAÇIRMA: <strong>1 Can Kaybı</strong>"},
                 {img: "kitkat.png", text: "KitKat / Xpress yakala: <strong>Oyun 3 saniyeliğine yavaşlar.</strong>"}, {img: "erikli.png", text: "Erikli yakala: <strong>1 Can kazanırsın.</strong>"},
             ]
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
             no_more_tries: "You are out of tries for today! Come back tomorrow.", game_over_title: "Game Over!", final_score_text: "Your Score:", return_to_menu_button: "Return to Main Menu",
             instructions_title: "How to Play?", im_ready_button: "I'm Ready, Start!",
             instructions: [
-                {img: "normal.png", text: "Catch Coca-Cola products: <strong>+5 Points</strong>"}, {img: "carrefour.png", text: "Catch rare Carrefour logos: <strong>+30 Points</strong>"},
+                {img: "normal.png", text: "Catch Coca-Cola products: <strong>+3 Points</strong>"}, {img: "carrefour.png", text: "Catch rare Carrefour logos: <strong>+15 Points</strong>"},
                 {img: "pepsi.png", text: "Don't catch rival products or bombs: <strong>-5 Points & Lose 1 Life</strong>"}, {img: "normal.png", text: "Don't miss good items: <strong>Lose 1 Life</strong>"},
                 {img: "kitkat.png", text: "Catch KitKat / Xpress: <strong>Slows down the game for 3 seconds.</strong>"}, {img: "erikli.png", text: "Catch Erikli: <strong>Gain 1 Life.</strong>"},
             ]
