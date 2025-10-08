@@ -1,6 +1,7 @@
 export function createGame(handleGameOver) {
     const config = {
         type: Phaser.AUTO,
+        parent: 'game-container',
         scale: {
             mode: Phaser.Scale.FIT,
             autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -47,7 +48,7 @@ export function createGame(handleGameOver) {
         'kitkat': 'kitkat.png',
         'xpress': 'xpress.png',
         'erikli': 'erikli.png',
-        'carrefour': 'https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-17.png?ssl=1'
+        'carrefour': 'carrefour.png'
     };
     
     const GOOD_ITEMS = ['coke', 'coke_zero', 'coke_light', 'fanta', 'sprite', 'cappy'];
@@ -55,6 +56,10 @@ export function createGame(handleGameOver) {
     const POWERUPS = ['kitkat', 'xpress', 'erikli'];
 
     function preload() {
+        // Bu, Phaser'a resimleri nereden bulacağını söyler. Repo adın "kyrosil" ise bu doğrudur.
+        // Eğer repo adın farklıysa, sondaki 'kyrosil' kısmını kendi repo adınla değiştir.
+        this.load.setBaseURL(window.location.href.includes('github.io') ? 'https://kyrosil.github.io/kyrosil/' : '');
+
         for (const key in ASSETS) {
             this.load.image(key, ASSETS[key]);
         }
@@ -173,7 +178,7 @@ export function createGame(handleGameOver) {
     function gameOver() {
         if (!sceneContext) return;
         sceneContext.physics.pause();
-        gameTimer.paused = true;
+        if(gameTimer) gameTimer.paused = true;
         if(player) player.setTint(0xff0000);
         handleGameOver(score);
     }
