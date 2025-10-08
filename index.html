@@ -9,44 +9,53 @@
 <body>
     <div id="app">
         <div id="language-selector-screen">
+            <div class="language-selector-container">
+                <img src="https://i0.wp.com/kyrosil.eu/wp-content/uploads/2025/04/adsiz-tasarim.png?fit=500%2C500&ssl=1" alt="Kyrosil Logo" class="main-logo-small">
+                <h2 id="lang-select-title"></h2><div class="location-warning"><p id="location-warning-text"></p></div>
+                <div class="options-wrapper">
+                    <div class="option" id="select-tr"><img src="https://flagcdn.com/w160/tr.png" alt="Türkiye Bayrağı"><span>Türkiye</span></div>
+                    <div class="option" id="select-eu"><img src="https://flagcdn.com/w160/eu.png" alt="Avrupa Birliği Bayrağı"><span>Europe</span></div>
+                </div>
             </div>
+        </div>
         <div id="auth-screen" class="hidden">
+            <div class="auth-container">
+                <img src="https://i0.wp.com/kyrosil.eu/wp-content/uploads/2025/04/adsiz-tasarim.png?fit=500%2C500&ssl=1" alt="Kyrosil Logo" class="main-logo"><h2 id="welcome-title"></h2>
+                <div id="notification-message" class="notification hidden"></div>
+                <div class="auth-tabs"><a href="#" class="auth-tab active" id="login-tab"></a><a href="#" class="auth-tab" id="register-tab"></a></div>
+                <form id="login-form"><input type="email" id="login-email" required><input type="password" id="login-password" required><div class="form-extra-links"><a href="#" id="forgot-password-link"></a></div><button type="submit" id="login-button"></button></form>
+                <form id="register-form" class="hidden"><input type="email" id="register-email" required><input type="password" id="register-password" required><input type="text" id="register-social" required><div id="country-wrapper" class="hidden"><select id="register-country"><option value="" disabled selected>Ülke Seçin / Select Country</option><option value="france">France</option><option value="spain">Spain</option><option value="italy">Italy</option><option value="belgium">Belgium</option><option value="poland">Poland</option><option value="romania">Romania</option></select></div><input type="text" id="register-card-gsm" required><p id="card-info-text" class="card-info"></p><div class="follow-rule"><input type="checkbox" id="follow-confirm" required><label for="follow-confirm" id="follow-label"></label></div><button type="submit" id="register-button"></button></form>
+                <div class="info-link"><a href="#" id="how-to-play-link"></a></div>
+                <div class="sponsors-footer"><img src="https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-5.png?ssl=1" alt="Coca-Cola"><img src="" alt="Carrefour Logo" id="carrefour-logo"><img src="https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-3.png?ssl=1" alt="Nestle"></div>
             </div>
+        </div>
         <div id="main-menu-screen" class="hidden">
             <div class="main-menu-container">
-                <header class="menu-header">
-                    <div>
-                        <h2 id="menu-welcome-title"></h2>
-                        <p id="user-email-display"></p>
-                    </div>
-                    <div class="points-display">
-                        <span id="user-points">0</span>
-                        <small id="points-label">PUAN</small>
-                    </div>
-                </header>
+                <header class="menu-header"><div><h2 id="menu-welcome-title"></h2><p id="user-email-display"></p></div><div class="points-display"><span id="user-points">0</span><small id="points-label">PUAN</small></div></header>
                 <main class="menu-actions">
                     <button class="menu-button" id="start-game-button"></button>
                     <button class="menu-button secondary" id="rewards-market-button"></button>
                     <button class="menu-button tertiary" id="my-purchases-button"></button>
                 </main>
-                <div class="menu-footer">
-                     <a href="#" id="logout-button"></a>
-                </div>
+                <div class="menu-footer"><a href="#" id="logout-button"></a></div>
             </div>
         </div>
         <div id="rewards-market-screen" class="hidden">
+            <div class="rewards-market-container">
+                <header class="market-header"><button class="back-button" id="back-to-menu-button">&larr;</button><h2 id="market-title"></h2><div class="points-display"><span id="market-user-points">0</span><small id="market-points-label">PUAN</small></div></header>
+                <div id="market-notification" class="notification hidden"></div>
+                <main class="rewards-list" id="rewards-list"></main>
             </div>
+        </div>
         <div id="my-purchases-screen" class="hidden">
             <div class="my-purchases-container">
-                <header class="market-header">
-                    <button class="back-button" id="purchases-back-button">&larr;</button>
-                    <h2 id="purchases-title"></h2>
-                </header>
-                <main class="purchases-list" id="purchases-list">
-                    </main>
+                <header class="market-header"><button class="back-button" id="purchases-back-button">&larr;</button><h2 id="purchases-title"></h2></header>
+                <main class="purchases-list" id="purchases-list"></main>
             </div>
         </div>
-        </div>
+        <div id="info-modal" class="modal-overlay hidden"><div class="modal-content"><button class="modal-close" id="modal-close-button">&times;</button><h2 id="modal-title"></h2><div id="modal-rules-title" class="modal-section-title"></div><p id="modal-rules-text"></p><div id="modal-rewards-title" class="modal-section-title"></div><div id="modal-rewards-text"></div><div id="modal-claim-title" class="modal-section-title"></div><p id="modal-claim-text"></p></div></div>
+        <div id="reset-password-modal" class="modal-overlay hidden"><div class="modal-content"><button class="modal-close" id="reset-modal-close-button">&times;</button><h2 id="reset-modal-title"></h2><p id="reset-modal-text"></p><form id="reset-password-form"><input type="email" id="reset-email" required><button type="submit" id="reset-button"></button></form></div></div>
+    </div>
     <footer class="persistent-footer">© 2025 Kyrosil. All Rights Reserved.</footer>
     <script type="module" src="main.js"></script>
 </body>
