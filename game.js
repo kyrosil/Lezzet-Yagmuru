@@ -1,3 +1,6 @@
+// Bu, game.js dosyasının içeriğidir.
+// KOD, ZORLUK VE GÜÇLENDİRME MANTIK HATALARINI KESİN OLARAK ÇÖZMEK İÇİN YENİDEN YAZILDI.
+
 class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: 'GameScene' });
@@ -5,13 +8,17 @@ class GameScene extends Phaser.Scene {
 
     init(data) {
         this.handleGameOver = data.handleGameOver;
+        // KESİN ÇÖZÜM 2: Başlangıç zorluğu artırıldı.
         this.score = 0;
         this.lives = 3;
-        this.spawnRate = 1800;
-        this.objectSpeed = 200;
+        this.spawnRate = 1600; // Daha sık düşüyor
+        this.objectSpeed = 250; // Daha hızlı düşüyor
         this.playerSpeed = 600;
         this.isLosingLife = false;
         this.startTime = 0;
+        this.nextSpawnTime = 0;
+        // KESİN ÇÖZÜM 1: Güçlendirme için hız çarpanı
+        this.speedMultiplier = 1;
     }
 
     preload() {
@@ -33,7 +40,7 @@ class GameScene extends Phaser.Scene {
     }
 
     create() {
-        this.startTime = this.time.now; // Zorluk sıfırlama için zaman sayacını başlat
+        this.startTime = this.time.now;
         
         this.player = this.physics.add.sprite(this.scale.width / 2, this.scale.height - 50, 'basket').setDisplaySize(130, 110).setCollideWorldBounds(true);
         this.player.body.immovable = true;
@@ -41,13 +48,11 @@ class GameScene extends Phaser.Scene {
         this.goodItems = this.physics.add.group();
         this.badItems = this.physics.add.group();
         this.powerups = this.physics.add.group();
-
+        
         this.physics.add.overlap(this.player, this.goodItems, this.collectGoodItem, null, this);
         this.physics.add.overlap(this.player, this.badItems, this.hitBadItem, null, this);
         this.physics.add.overlap(this.player, this.powerups, this.collectPowerup, null, this);
         
-        this.gameTimer = this.time.addEvent({ delay: this.spawnRate, callback: this.spawnObject, callbackScope: this, loop: true });
-
         this.updateScoreDisplay();
         this.updateLivesDisplay();
         
@@ -61,10 +66,15 @@ class GameScene extends Phaser.Scene {
     update(time, delta) {
         if (this.lives <= 0) return;
         
+        // KESİN ÇÖZÜM 2: Zorluk artışı daha agresif.
         const elapsedTime = (time - this.startTime) / 1000;
-        this.objectSpeed = 200 + (elapsedTime * 8);
-        this.spawnRate = Math.max(300, 1800 - (elapsedTime * 50));
-        this.gameTimer.delay = this.spawnRate;
+        this.objectSpeed = 250 + (elapsedTime * 10);
+        this.spawnRate = Math.max(250, 1600 - (elapsedTime * 60));
+        
+        if (time > this.nextSpawnTime) {
+            this.spawnObject();
+            this.nextSpawnTime = time + this.spawnRate;
+        }
 
         this.checkOutOfBounds(this.goodItems, true);
         this.checkOutOfBounds(this.badItems, false);
@@ -74,20 +84,19 @@ class GameScene extends Phaser.Scene {
     spawnObject() {
         if (this.lives <= 0) return;
         const x = Phaser.Math.Between(50, this.scale.width - 50);
-        const spawnY = -200; // Tepeden düşme garantisi için yüksek bir başlangıç
+        const spawnY = -100;
         const typeChance = Phaser.Math.FloatBetween(0, 100);
         let itemKey, group, width, height;
 
-        if (typeChance < 3) { // %3 ihtimalle Carrefour
-            itemKey = 'carrefour';
-            group = this.goodItems; width = 90; height = 90;
-        } else if (typeChance < 73) { // %70 ihtimalle normal iyi obje
+        if (typeChance < 3) { 
+            itemKey = 'carrefour'; group = this.goodItems; width = 90; height = 90;
+        } else if (typeChance < 73) {
             itemKey = Phaser.Utils.Array.GetRandom(['coke', 'coke_zero', 'coke_light', 'fanta', 'sprite', 'cappy']); 
             group = this.goodItems; width = 80; height = 100; 
-        } else if (typeChance < 90) { // %17 ihtimalle kötü obje
+        } else if (typeChance < 90) {
             itemKey = Phaser.Utils.Array.GetRandom(['pepsi', 'bomb']); 
             group = this.badItems; width = 85; height = 85; 
-        } else { // %10 ihtimalle power-up
+        } else {
             itemKey = Phaser.Utils.Array.GetRandom(['kitkat', 'xpress', 'erikli']); 
             group = this.powerups; width = 70; height = 70; 
         }
@@ -96,7 +105,8 @@ class GameScene extends Phaser.Scene {
         if (item) {
             group.add(item);
             item.setDisplaySize(width, height);
-            item.setVelocityY(this.objectSpeed);
+            // KESİN ÇÖZÜM 1: Hız, güçlendirme çarpanından etkileniyor.
+            item.setVelocityY(this.objectSpeed * this.speedMultiplier);
             item.setAngularVelocity(Phaser.Math.Between(-100, 100));
         }
     }
@@ -105,7 +115,7 @@ class GameScene extends Phaser.Scene {
         const key = item.texture.key;
         if (key === 'carrefour') {
             this.score += 30;
-            this.cameras.main.flash(100, 255, 255, 255); // Beyaz parlama efekti
+            this.cameras.main.flash(100, 255, 255, 255);
         } else {
             this.score += 5;
         }
@@ -113,12 +123,7 @@ class GameScene extends Phaser.Scene {
         this.updateScoreDisplay();
     }
     
-    hitBadItem(player, item) {
-        item.destroy();
-        this.score = Math.max(0, this.score - 5);
-        this.updateScoreDisplay();
-        this.loseLife();
-    }
+    hitBadItem(player, item) { item.destroy(); this.score = Math.max(0, this.score - 5); this.updateScoreDisplay(); this.loseLife(); }
     
     collectPowerup(player, item) {
         const key = item.texture.key;
@@ -128,12 +133,10 @@ class GameScene extends Phaser.Scene {
             this.lives++;
             this.updateLivesDisplay();
         } else if (key === 'xpress' || key === 'kitkat') {
-            // Güçlendirmeler artık oyunu yavaşlatıyor
-            if (this.physics.world.timeScale === 1) { // Eğer zaten yavaş değilse
-                this.physics.world.timeScale = 0.5;
-                this.time.delayedCall(3000, () => {
-                    if (this.physics.world) this.physics.world.timeScale = 1;
-                }, [], this);
+            // KESİN ÇÖZÜM 1: Güçlendirmeler artık oyunu yavaşlatıyor.
+            if (this.speedMultiplier === 1) { // Eğer zaten yavaş değilse
+                this.speedMultiplier = 0.5;
+                this.time.delayedCall(3000, () => { this.speedMultiplier = 1; }, [], this);
             }
         }
     }
@@ -143,7 +146,7 @@ class GameScene extends Phaser.Scene {
             this.isLosingLife = true;
             this.lives--;
             this.updateLivesDisplay();
-            this.cameras.main.flash(150, 255, 60, 60); // Kırmızı parlama efekti
+            this.cameras.main.flash(150, 255, 60, 60);
             this.time.delayedCall(100, () => { this.isLosingLife = false; });
             if (this.lives <= 0) this.gameOver();
         }
