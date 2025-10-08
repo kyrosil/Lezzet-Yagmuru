@@ -3,12 +3,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebas
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
-// Senin yeni Firebase projenin kimlik bilgileri buraya eklendi.
+// Senin son yolladığın, doğru Firebase projenin kimlik bilgileri.
 const firebaseConfig = {
   apiKey: "AIzaSyDAlIpvrMtKbfOJmTo1Ut4H3lV3KMePQZo",
   authDomain: "lezzet-yagmuru.firebaseapp.com",
   projectId: "lezzet-yagmuru",
-  storageBucket: "lezzet-yagmuru.appspot.com",
+  storageBucket: "lezzet-yagmuru.appspot.com", // 'firebasestorage.app' değil, '.appspot.com' olmalı. Düzeltildi.
   messagingSenderId: "435103121551",
   appId: "1:435103121551:web:3ad5ce4a45b557e026f0fa",
   measurementId: "G-805ZG6M5VK"
@@ -35,8 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const howToPlayLink = document.getElementById('how-to-play-link');
     const infoModal = document.getElementById('info-modal');
     const modalCloseButton = document.getElementById('modal-close-button');
+    const countrySelect = document.getElementById('register-country');
     
-    // --- ÇEVİRİ METİNLERİ VE VERİLER (DEĞİŞİKLİK YOK) ---
+    // --- ÇEVİRİ METİNLERİ VE VERİLER ---
     const texts = {
         tr: {
             carrefour_logo_url: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-16.png?ssl=1",
@@ -74,7 +75,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const langData = texts[lang];
         if (!langData) { console.error("Dil verisi bulunamadı:", lang); return; }
         
+        // DİNAMİK 'REQUIRED' DÜZELTMESİ BURADA
+        countrySelect.required = (lang === 'en');
+
         document.getElementById('lang-select-title').textContent = langData.lang_select_title;
+        // ... Diğer tüm text atamaları aynı kalacak
         document.getElementById('location-warning-text').innerHTML = langData.location_warning;
         carrefourLogo.src = langData.carrefour_logo_url;
         document.getElementById('welcome-title').textContent = langData.welcome_title;
@@ -156,17 +161,15 @@ document.addEventListener('DOMContentLoaded', () => {
             isFollowing: document.getElementById('follow-confirm').checked,
             region: currentLang,
             points: 0,
-            createdAt: serverTimestamp() // GÜNCEL KOD
+            createdAt: serverTimestamp()
         };
         if (currentLang === 'en') {
-            userData.country = document.getElementById('register-country').value;
+            userData.country = countrySelect.value;
         }
 
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            
-            // Firestore'a veriyi yeni yöntemle kaydet
             await setDoc(doc(db, "users", user.uid), userData);
             
             console.log("Kullanıcı veritabanına başarıyla kaydedildi.");
