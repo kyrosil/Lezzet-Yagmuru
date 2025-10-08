@@ -59,7 +59,7 @@ export function createGame(handleGameOver) {
         // GitHub Pages'de doğru adresi bulması için adres etiketini ekliyoruz
         if (window.location.href.includes('github.io')) {
              // Repo adın 'kyrosil' ise bu doğrudur. Değilse, sondaki 'kyrosil' kısmını kendi repo adınla değiştir.
-            this.load.setBaseURL('https://kyrosil.github.io/kyrosil/');
+            this.load.setBaseURL('https://kyrosil.github.io/Lezzet-Yagmuru/');
         }
 
         for (const key in ASSETS) {
