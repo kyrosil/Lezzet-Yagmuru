@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
             menu_welcome_title: "Hoş Geldin", points_label: "PUAN", start_game_button: "OYUNA BAŞLA", rewards_market_button: "ÖDÜL MARKETİ", my_purchases_button: "SATIN ALIMLARIM", logout_button: "Çıkış Yap", market_title: "Ödül Marketi", claim_button: "Satın Al", insufficient_points: "Yetersiz Puan",
             purchase_success_part1: "Ödül talebiniz alındı! İşlemi tamamlamak için lütfen aşağıdaki linke tıklayarak bize, otomatik oluşturulan e-postayı gönderin:", purchase_success_part2: "E-POSTA GÖNDER", purchase_fail: "Bu ödülü almak için yeterli puanınız yok.",
             purchases_title: "Satın Alımlarım", no_purchases: "Henüz bir satın alım yapmadınız.", inceleniyor: "İnceleniyor", tanımlandı: "Tanımlandı", loading: "Yükleniyor...", promo_title: "Promosyon Kodu", redeem_button: "Kullan",
-            no_more_tries: "Bugünkü oyun hakkın bitti! Yarın tekrar oyna.", game_over_title: "Oyun Bitti!", final_score_text: "Skorun:", return_to_menu_button: "Ana Menü'ye Dön"
+            no_more_tries: "Bugünkü oyun hakkın bitti! Yarın tekrar oyna.", game_over_title: "Oyun Bitti!", final_score_text: "Kazandığın Puan:", return_to_menu_button: "Ana Menü'ye Dön"
         },
         en: {
             carrefour_logo_url: "https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-17.png?ssl=1", lang_select_title: "Select Your Location", location_warning: "<strong>IMPORTANT:</strong> To ensure correct prize allocation, please select the region you live in.", welcome_title: "Welcome to Taste Rain!", login: "Login", register: "Sign Up", email_placeholder: "Email Address", password_placeholder: "Password", social_placeholder: "Social Media Username", card_gsm_placeholder: "Carrefour Card No / Mobile No",
@@ -81,13 +81,12 @@ document.addEventListener('DOMContentLoaded', () => {
             menu_welcome_title: "Welcome", points_label: "POINTS", start_game_button: "START GAME", rewards_market_button: "REWARDS MARKET", my_purchases_button: "MY PURCHASES", logout_button: "Logout", market_title: "Rewards Market", claim_button: "Purchase", insufficient_points: "Insufficient Points",
             purchase_success_part1: "Your reward claim has been received! To complete the process, please send us the auto-generated email by clicking the link below:", purchase_success_part2: "SEND EMAIL", purchase_fail: "You do not have enough points for this reward.",
             purchases_title: "My Purchases", no_purchases: "You have not made any purchases yet.", inceleniyor: "Under Review", tanımlandı: "Completed", loading: "Loading...", promo_title: "Promotion Code", redeem_button: "Redeem",
-            no_more_tries: "You are out of tries for today! Come back tomorrow.", game_over_title: "Game Over!", final_score_text: "Your Score:", return_to_menu_button: "Return to Main Menu"
+            no_more_tries: "You are out of tries for today! Come back tomorrow.", game_over_title: "Game Over!", final_score_text: "Score:", return_to_menu_button: "Return to Main Menu"
         }
     };
     
     let currentLang = 'tr';
     let currentUserData = {};
-    let activeGame = null;
 
     onAuthStateChanged(auth, async (user) => {
         if (user && user.emailVerified) {
@@ -155,7 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('redeem-code-button').textContent = langData.redeem_button;
         document.getElementById('score-label').textContent = langData.points_label;
         document.getElementById('game-over-title').textContent = langData.game_over_title;
-        document.getElementById('final-score-text').textContent = langData.final_score_text;
+        document.getElementById('final-score-text').innerHTML = `${langData.final_score_text} <span id="final-score">0</span>`;
         document.getElementById('return-to-menu-button').textContent = langData.return_to_menu_button;
     }
 
@@ -253,28 +252,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     startGameButton.addEventListener('click', async () => {
         const userDocRef = doc(db, 'users', currentUserData.uid);
-        const userDocSnap = await getDoc(userDocRef);
-        const userData = userDocSnap.data();
-        const today = new Date().toDateString();
-        const lastPlayed = userData.lastPlayedDate || null;
-        let triesLeft = userData.hasOwnProperty('dailyTriesLeft') ? userData.dailyTriesLeft : 3;
-        if (today !== lastPlayed) {
-            triesLeft = 3;
-            await updateDoc(userDocRef, { dailyTriesLeft: 3, lastPlayedDate: today });
-        }
-        if (triesLeft > 0) {
-            await updateDoc(userDocRef, { dailyTriesLeft: increment(-1) });
-            showScreen('game');
-            createGame(handleGameOver);
-        } else {
-            showNotification(texts[currentLang].no_more_tries, 'error');
-        }
+        try {
+            const userDocSnap = await getDoc(userDocRef);
+            const userData = userDocSnap.data();
+            const today = new Date().toDateString();
+            const lastPlayed = userData.lastPlayedDate || null;
+            let triesLeft = userData.hasOwnProperty('dailyTriesLeft') ? userData.dailyTriesLeft : 3;
+            if (today !== lastPlayed) {
+                triesLeft = 3;
+                await updateDoc(userDocRef, { dailyTriesLeft: 3, lastPlayedDate: today });
+            }
+            if (triesLeft > 0) {
+                await updateDoc(userDocRef, { dailyTriesLeft: increment(-1) });
+                showScreen('game');
+                createGame(handleGameOver);
+            } else {
+                showNotification(texts[currentLang].no_more_tries, 'error');
+            }
+        } catch (error) { console.error("Günlük hak kontrol hatası:", error); showNotification("Oyun başlatılırken bir hata oluştu.", "error"); }
     });
-
+    
     returnToMenuButton.addEventListener('click', () => {
         document.getElementById('game-over-screen').classList.add('hidden');
-        showScreen('mainMenu');
         if(window.phaserGame) { window.phaserGame.destroy(true); window.phaserGame = null; }
+        showScreen('mainMenu');
         document.getElementById('user-points').textContent = currentUserData.points;
     });
 
