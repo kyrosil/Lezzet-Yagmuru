@@ -71,6 +71,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateTexts(lang) {
         const langData = texts[lang];
+        if (!langData) {
+            console.error("Dil verisi bulunamadı:", lang);
+            return;
+        }
+        
         // Dil Seçim Ekranı Metinleri
         document.getElementById('lang-select-title').textContent = langData.lang_select_title;
         document.getElementById('location-warning-text').innerHTML = langData.location_warning;
@@ -102,19 +107,20 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('modal-claim-title').textContent = langData.modal_claim_title;
         document.getElementById('modal-claim-text').innerHTML = langData.modal_claim_text;
         
-        countryWrapper.classList.toggle('hidden', lang !== 'eu');
+        // DÜZELTME: 'eu' yerine 'en' kullanılıyor
+        countryWrapper.classList.toggle('hidden', lang !== 'en');
     }
 
     // --- Olay Yöneticileri (Event Listeners) ---
     selectTR.addEventListener('click', () => handleSelection('tr'));
-    selectEU.addEventListener('click', () => handleSelection('eu'));
+    
+    // DÜZELTME: handleSelection fonksiyonuna 'eu' yerine 'en' gönderiliyor
+    selectEU.addEventListener('click', () => handleSelection('en'));
+    
     loginTab.addEventListener('click', (e) => switchTab(e, 'login'));
     registerTab.addEventListener('click', (e) => switchTab(e, 'register'));
     howToPlayLink.addEventListener('click', (e) => { e.preventDefault(); infoModal.classList.remove('hidden'); });
-    
-    // HATANIN OLDUĞU SATIR DÜZELTİLDİ
-    modalCloseButton.addEventListener('click', () => infoModal.classList.add('hidden')); 
-    
+    modalCloseButton.addEventListener('click', () => infoModal.classList.add('hidden'));
     loginForm.addEventListener('submit', (e) => { e.preventDefault(); console.log("Giriş:", { email: document.getElementById('login-email').value }); });
     registerForm.addEventListener('submit', (e) => { e.preventDefault(); handleRegistration(); });
     
@@ -145,7 +151,8 @@ document.addEventListener('DOMContentLoaded', () => {
             isFollowing: document.getElementById('follow-confirm').checked,
             region: currentLang
         };
-        if (currentLang === 'eu') {
+        // DÜZELTME: 'eu' yerine 'en' kontrol ediliyor
+        if (currentLang === 'en') {
             userData.country = document.getElementById('register-country').value;
         }
         console.log("Kayıt Talebi (Firebase'e gidecek veriler):", userData);
