@@ -99,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let currentLang = 'tr';
     let currentUserData = {};
-    let justRegistered = false; // Kayıt sonrası sayfa yenilemesini engellemek için
+    let blockAuthListener = false;
 
     async function updateDailyTries(userDocRef) {
         const userDocSnap = await getDoc(userDocRef);
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     onAuthStateChanged(auth, async (user) => {
-        if (justRegistered) return; // Yeni kaydolduysa, ekranı değiştirmeyi engelle
+        if (blockAuthListener) return;
         if (user && user.emailVerified) {
             const userDocRef = doc(db, 'users', user.uid);
             const triesLeft = await updateDailyTries(userDocRef);
@@ -313,6 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     loginForm.addEventListener('submit', (e) => { e.preventDefault(); const email = document.getElementById('login-email').value; const password = document.getElementById('login-password').value; signInWithEmailAndPassword(auth, email, password).then((userCredential) => { if (!userCredential.user.emailVerified) { signOut(auth); showNotification(texts[currentLang].login_unverified, 'error'); } }).catch(() => { showNotification(texts[currentLang].login_fail, 'error'); }); });
+    
     registerForm.addEventListener('submit', async (e) => { 
         e.preventDefault();
         const email = document.getElementById('register-email').value;
@@ -323,9 +324,9 @@ document.addEventListener('DOMContentLoaded', () => {
             await sendEmailVerification(userCredential.user);
             await setDoc(doc(db, "users", userCredential.user.uid), userData); 
             
-            justRegistered = true;
+            blockAuthListener = true;
             await signOut(auth);
-            justRegistered = false;
+            blockAuthListener = false;
 
             showNotification(texts[currentLang].register_success, 'success'); 
             registerForm.reset();
