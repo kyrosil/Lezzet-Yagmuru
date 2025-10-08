@@ -29,10 +29,7 @@ export function createGame(handleGameOver) {
     window.phaserGame = new Phaser.Game(config);
     
     let player, gameTimer;
-    let score = 0;
-    let lives = 3;
-    let spawnRate = 1800;
-    let objectSpeed = 200;
+    let score, lives, spawnRate, objectSpeed; // Değişkenler burada tanımlanıyor
     let sceneContext;
 
     const ASSETS = {
@@ -67,7 +64,13 @@ export function createGame(handleGameOver) {
 
     function create() {
         sceneContext = this;
-        // Sepet boyutu aynı kalıyor
+
+        // DÜZELTME: Her oyun başladığında tüm değerler sıfırlanıyor.
+        score = 0;
+        lives = 3;
+        spawnRate = 1800;
+        objectSpeed = 200;
+        
         player = this.physics.add.sprite(400, 550, 'basket').setDisplaySize(130, 110).setCollideWorldBounds(true);
         player.body.immovable = true;
         
@@ -81,7 +84,10 @@ export function createGame(handleGameOver) {
         this.physics.add.overlap(player, this.powerups, collectPowerup, null, this);
         this.physics.add.overlap(player, this.bonusItems, collectBonusItem, null, this);
         
+        // Zamanlayıcıyı burada oluşturuyoruz veya sıfırlıyoruz
+        if (gameTimer) gameTimer.destroy();
         gameTimer = this.time.addEvent({ delay: spawnRate, callback: spawnObject, callbackScope: this, loop: true });
+        
         this.time.addEvent({ delay: Phaser.Math.Between(15000, 25000), callback: spawnBonus, loop: true });
 
         updateScoreDisplay();
@@ -117,21 +123,17 @@ export function createGame(handleGameOver) {
         if (typeChance < 0.55) { 
             itemKey = Phaser.Utils.Array.GetRandom(GOOD_ITEMS); 
             group = sceneContext.goodItems;
-            // YENİ BÜYÜK BOYUTLAR
             width = 80; height = 100; 
         } else if (typeChance < 0.85) { 
             itemKey = Phaser.Utils.Array.GetRandom(BAD_ITEMS); 
             group = sceneContext.badItems;
-            // YENİ BÜYÜK BOYUTLAR
             width = 85; height = 85; 
         } else { 
             itemKey = Phaser.Utils.Array.GetRandom(POWERUPS); 
             group = sceneContext.powerups;
-            // YENİ BÜYÜK BOYUTLAR
             width = 70; height = 70; 
         }
         
-        // YENİ: Başlangıç pozisyonu daha da yukarı alındı (-250)
         const item = group.create(x, -250, itemKey);
         if (item) {
             item.setDisplaySize(width, height);
@@ -143,10 +145,8 @@ export function createGame(handleGameOver) {
     function spawnBonus() {
         if (lives <= 0 || !sceneContext) return;
         const x = Phaser.Math.Between(50, 750);
-        // YENİ: Başlangıç pozisyonu daha da yukarı alındı (-250)
         const bonus = sceneContext.bonusItems.create(x, -250, 'carrefour');
         if (bonus) {
-            // YENİ BÜYÜK BOYUT
             bonus.setDisplaySize(90, 90);
             bonus.setVelocityY(objectSpeed * 2.5);
         }
