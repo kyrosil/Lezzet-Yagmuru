@@ -7,82 +7,83 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-    <div class="language-selector-container">
-        <img src="https://i0.wp.com/kyrosil.eu/wp-content/uploads/2025/04/adsiz-tasarim.png?fit=500%2C500&ssl=1" alt="Kyrosil Logo" class="main-logo-small">
-        <h2>Konumunu Seç / Select Your Location</h2>
-        <div class="location-warning">
-            <p id="location-warning-text"><strong>ÖNEMLİ:</strong> Ödüllerin doğru bir şekilde tanımlanabilmesi için lütfen yaşadığınız bölgeyi doğru seçiniz. Bu seçim daha sonra değiştirilemez.</p>
-        </div>
-        <div class="options-wrapper">
-            <div class="option" id="select-tr">
-                <img src="https://flagcdn.com/w160/tr.png" alt="Türkiye Bayrağı">
-                <span>Türkiye</span>
+    <div id="app">
+        <div class="language-selector-container">
+            <img src="https://i0.wp.com/kyrosil.eu/wp-content/uploads/2025/04/adsiz-tasarim.png?fit=500%2C500&ssl=1" alt="Kyrosil Logo" class="main-logo-small">
+            <h2 id="lang-select-title"></h2>
+            <div class="location-warning">
+                <p id="location-warning-text"></p>
             </div>
-            <div class="option" id="select-eu">
-                <img src="https://flagcdn.com/w160/eu.png" alt="Avrupa Birliği Bayrağı">
-                <span>Europe</span>
-            </div>
-        </div>
-    </div>
-
-    <div id="auth-screen" class="hidden">
-        <div class="auth-container">
-            <img src="https://i0.wp.com/kyrosil.eu/wp-content/uploads/2025/04/adsiz-tasarim.png?fit=500%2C500&ssl=1" alt="Kyrosil Logo" class="main-logo">
-            <h2 id="welcome-title">Lezzet Yağmuru'na Hoş Geldin!</h2>
-            <div class="auth-tabs">
-                <a href="#" class="auth-tab active" id="login-tab">Giriş Yap</a>
-                <a href="#" class="auth-tab" id="register-tab">Kayıt Ol</a>
-            </div>
-            <form id="login-form">
-                <input type="email" id="login-email" placeholder="E-posta Adresi" required>
-                <input type="password" id="login-password" placeholder="Şifre" required>
-                <button type="submit" id="login-button">Giriş Yap</button>
-            </form>
-            <form id="register-form" class="hidden">
-                <input type="email" id="register-email" placeholder="E-posta Adresi" required>
-                <input type="password" id="register-password" placeholder="Şifre" required>
-                <input type="text" id="register-social" placeholder="Sosyal Medya Kullanıcı Adı" required>
-                <div id="country-wrapper" class="hidden">
-                    <select id="register-country" required>
-                        <option value="" disabled selected>Ülke Seçin / Select Country</option>
-                        <option value="france">France</option><option value="spain">Spain</option><option value="italy">Italy</option><option value="belgium">Belgium</option><option value="poland">Poland</option><option value="romania">Romania</option>
-                    </select>
+            <div class="options-wrapper">
+                <div class="option" id="select-tr">
+                    <img src="https://flagcdn.com/w160/tr.png" alt="Türkiye Bayrağı">
+                    <span>Türkiye</span>
                 </div>
-                <input type="text" id="register-card-gsm" placeholder="CarrefourSA Kart No / GSM" required>
-                <p id="card-info-text" class="card-info"></p>
-                <div class="follow-rule">
-                    <input type="checkbox" id="follow-confirm" required>
-                    <label for="follow-confirm" id="follow-label">@Kyrosil hesabını takip ediyorum.</label>
+                <div class="option" id="select-eu">
+                    <img src="https://flagcdn.com/w160/eu.png" alt="Avrupa Birliği Bayrağı">
+                    <span>Europe</span>
                 </div>
-                <button type="submit" id="register-button">Kayıt Ol</button>
-            </form>
-            <div class="info-link">
-                <a href="#" id="how-to-play-link">Nasıl Oynanır & Ödüller</a>
             </div>
-            <div class="sponsors-footer">
-                <img src="https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-5.png?ssl=1" alt="Coca-Cola">
-                <img src="" alt="Carrefour Logo" id="carrefour-logo">
-                <img src="https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-3.png?ssl=1" alt="Nestle">
+        </div>
+
+        <div id="auth-screen" class="hidden">
+            <div class="auth-container">
+                <img src="https://i0.wp.com/kyrosil.eu/wp-content/uploads/2025/04/adsiz-tasarim.png?fit=500%2C500&ssl=1" alt="Kyrosil Logo" class="main-logo">
+                <h2 id="welcome-title"></h2>
+                <div class="auth-tabs">
+                    <a href="#" class="auth-tab active" id="login-tab"></a>
+                    <a href="#" class="auth-tab" id="register-tab"></a>
+                </div>
+                <form id="login-form">
+                    <input type="email" id="login-email" required>
+                    <input type="password" id="login-password" required>
+                    <button type="submit" id="login-button"></button>
+                </form>
+                <form id="register-form" class="hidden">
+                    <input type="email" id="register-email" required>
+                    <input type="password" id="register-password" required>
+                    <input type="text" id="register-social" required>
+                    <div id="country-wrapper" class="hidden">
+                        <select id="register-country" required>
+                            <option value="" disabled selected>Ülke Seçin / Select Country</option>
+                            <option value="france">France</option><option value="spain">Spain</option><option value="italy">Italy</option><option value="belgium">Belgium</option><option value="poland">Poland</option><option value="romania">Romania</option>
+                        </select>
+                    </div>
+                    <input type="text" id="register-card-gsm" required>
+                    <p id="card-info-text" class="card-info"></p>
+                    <div class="follow-rule">
+                        <input type="checkbox" id="follow-confirm" required>
+                        <label for="follow-confirm" id="follow-label"></label>
+                    </div>
+                    <button type="submit" id="register-button"></button>
+                </form>
+                <div class="info-link">
+                    <a href="#" id="how-to-play-link"></a>
+                </div>
+                <div class="sponsors-footer">
+                    <img src="https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-5.png?ssl=1" alt="Coca-Cola">
+                    <img src="" alt="Carrefour Logo" id="carrefour-logo">
+                    <img src="https://i0.wp.com/kyrosil.wpcomstaging.com/wp-content/uploads/2025/04/image-3.png?ssl=1" alt="Nestle">
+                </div>
+            </div>
+        </div>
+        
+        <div id="info-modal" class="modal-overlay hidden">
+            <div class="modal-content">
+                <button class="modal-close" id="modal-close-button">&times;</button>
+                <h2 id="modal-title"></h2>
+                <div id="modal-rules-title" class="modal-section-title"></div>
+                <p id="modal-rules-text"></p>
+                <div id="modal-rewards-title" class="modal-section-title"></div>
+                <div id="modal-rewards-text"></div>
+                <div id="modal-claim-title" class="modal-section-title"></div>
+                <p id="modal-claim-text"></p>
             </div>
         </div>
     </div>
     
-    <div id="info-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <button class="modal-close" id="modal-close-button">&times;</button>
-            <h2 id="modal-title">Nasıl Oynanır & Ödüller</h2>
-            <div id="modal-rules-title" class="modal-section-title">Oyun Kuralları</div>
-            <p id="modal-rules-text"></p>
-            <div id="modal-rewards-title" class="modal-section-title">Ödüller</div>
-            <div id="modal-rewards-text"></div>
-            <div id="modal-claim-title" class="modal-section-title"></div>
-            <p id="modal-claim-text"></p>
-        </div>
-    </div>
-
     <footer class="persistent-footer">
-        © 2025 Kyrosil. Tüm Hakları Saklıdır.
+        © 2025 Kyrosil. All Rights Reserved.
     </footer>
 
     <script src="main.js"></script>
