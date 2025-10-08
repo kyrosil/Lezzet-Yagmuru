@@ -50,17 +50,39 @@
                 <div class="menu-footer"><a href="#" id="logout-button"></a></div>
             </div>
         </div>
-        <div id="rewards-market-screen" class="hidden"></div>
-        <div id="my-purchases-screen" class="hidden"></div>
-        <div id="game-screen" class="hidden"></div>
-        <div id="info-modal" class="modal-overlay hidden"></div>
-        <div id="reset-password-modal" class="modal-overlay hidden"></div>
-        
+        <div id="rewards-market-screen" class="hidden">
+            <div class="rewards-market-container">
+                <header class="market-header"><button class="back-button" id="back-to-menu-button">&larr;</button><h2 id="market-title"></h2><div class="points-display"><span id="market-user-points">0</span><small id="market-points-label">PUAN</small></div></header>
+                <div id="market-notification" class="notification hidden"></div>
+                <main class="rewards-list" id="rewards-list"></main>
+            </div>
+        </div>
+        <div id="my-purchases-screen" class="hidden">
+            <div class="my-purchases-container">
+                <header class="market-header"><button class="back-button" id="purchases-back-button">&larr;</button><h2 id="purchases-title"></h2></header>
+                <main class="purchases-list" id="purchases-list"></main>
+            </div>
+        </div>
+        <div id="game-screen" class="hidden">
+            <div id="game-container"></div>
+            <div id="game-ui">
+                <div class="ui-element" id="score-display"><span id="score-text">0</span><small id="score-label">PUAN</small></div>
+                <div class="ui-element" id="lives-display"></div>
+            </div>
+            <div id="game-over-screen" class="modal-overlay hidden">
+                <div class="modal-content">
+                    <h2 id="game-over-title"></h2>
+                    <p id="final-score-text">Skorun: <span id="final-score">0</span></p>
+                    <button class="menu-button" id="return-to-menu-button"></button>
+                </div>
+            </div>
+        </div>
+        <div id="info-modal" class="modal-overlay hidden"><div class="modal-content"><button class="modal-close" id="modal-close-button">&times;</button><h2 id="modal-title"></h2><div id="modal-rules-title" class="modal-section-title"></div><p id="modal-rules-text"></p><div id="modal-rewards-title" class="modal-section-title"></div><div id="modal-rewards-text"></div><div id="modal-claim-title" class="modal-section-title"></div><p id="modal-claim-text"></p></div></div>
+        <div id="reset-password-modal" class="modal-overlay hidden"><div class="modal-content"><button class="modal-close" id="reset-modal-close-button">&times;</button><h2 id="reset-modal-title"></h2><p id="reset-modal-text"></p><form id="reset-password-form"><input type="email" id="reset-email" required><button type="submit" id="reset-button"></button></form></div></div>
         <div id="instructions-modal" class="modal-overlay hidden">
             <div class="modal-content">
                 <h2 id="instructions-title"></h2>
-                <ul class="instructions-list" id="instructions-list">
-                    </ul>
+                <ul class="instructions-list" id="instructions-list"></ul>
                 <button class="menu-button" id="im-ready-button"></button>
             </div>
         </div>
