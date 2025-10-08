@@ -11,8 +11,9 @@ class GameScene extends Phaser.Scene {
         this.handleGameOver = data.handleGameOver;
         this.score = 0;
         this.lives = 3;
-        this.spawnRate = 1800; // Başlangıç zorluğu sıfırlandı
-        this.objectSpeed = 200; // Başlangıç zorluğu sıfırlandı
+        this.spawnRate = 1800;
+        this.objectSpeed = 200;
+        this.playerSpeed = 600; // Sepetin normal hızı
     }
 
     preload() {
@@ -23,7 +24,7 @@ class GameScene extends Phaser.Scene {
             'coke_light': 'light.png',
             'fanta': 'fanta.png',
             'sprite': 'sprite.png',
-            'cappy': 'https://i.imgur.com/832gT26.png', // Arka planı transparan yeni Cappy linki
+            'cappy': 'https://i.imgur.com/832gT26.png',
             'pepsi': 'pepsi.png',
             'bomb': 'bomb.png',
             'kitkat': 'kitkat.png',
@@ -63,7 +64,10 @@ class GameScene extends Phaser.Scene {
         
         this.input.on('pointermove', (pointer) => {
             if (this.lives > 0) {
-                 this.player.x = Phaser.Math.Clamp(pointer.x, 65, this.scale.width - 65);
+                 // Hızlanma efekti için pointer'ı direkt takip etmek yerine hıza bağlı hareket
+                 this.physics.moveTo(this.player, pointer.x, this.player.y, this.playerSpeed);
+            } else {
+                this.player.setVelocityX(0);
             }
         });
     }
@@ -71,10 +75,17 @@ class GameScene extends Phaser.Scene {
     update() {
         if (this.lives <= 0) return;
         
-        const elapsedTime = this.time.now / 1000;
+        // ZORLUK SIFIRLAMA DÜZELTMESİ: Zaman artık sahne başladığından beri sayılıyor.
+        const elapsedTime = this.time.sinceStart / 1000;
         this.objectSpeed = 200 + (elapsedTime * 8);
         this.spawnRate = Math.max(300, 1800 - (elapsedTime * 50));
         this.gameTimer.delay = this.spawnRate;
+
+        // Sepetin hedefe ulaştığında durmasını sağla
+        const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.input.x, this.player.y);
+        if (distance < 4) {
+            this.player.setVelocityX(0);
+        }
 
         this.checkOutOfBounds(this.goodItems, true);
         this.checkOutOfBounds(this.bonusItems, true);
@@ -85,22 +96,18 @@ class GameScene extends Phaser.Scene {
     spawnObject() {
         if (this.lives <= 0) return;
         const x = Phaser.Math.Between(50, this.scale.width - 50);
-        // ZORLUK DENGELENDİ
         const typeChance = Phaser.Math.FloatBetween(0, 1);
         let itemKey, group, width, height;
 
-        if (typeChance < 0.70) { // %70 ihtimalle iyi obje
+        if (typeChance < 0.70) {
             itemKey = Phaser.Utils.Array.GetRandom(['coke', 'coke_zero', 'coke_light', 'fanta', 'sprite', 'cappy']); 
-            group = this.goodItems;
-            width = 80; height = 100; 
-        } else if (typeChance < 0.90) { // %20 ihtimalle kötü obje
+            group = this.goodItems; width = 80; height = 100; 
+        } else if (typeChance < 0.90) {
             itemKey = Phaser.Utils.Array.GetRandom(['pepsi', 'bomb']); 
-            group = this.badItems;
-            width = 85; height = 85; 
-        } else { // %10 ihtimalle power-up
+            group = this.badItems; width = 85; height = 85; 
+        } else {
             itemKey = Phaser.Utils.Array.GetRandom(['kitkat', 'xpress', 'erikli']); 
-            group = this.powerups;
-            width = 70; height = 70; 
+            group = this.powerups; width = 70; height = 70; 
         }
         
         // DÜZELTME: Başlangıç pozisyonu ekranın en tepesi olarak garantilendi
@@ -125,10 +132,23 @@ class GameScene extends Phaser.Scene {
     collectGoodItem(player, item) { item.destroy(); this.score += 5; this.updateScoreDisplay(); }
     collectBonusItem(player, item) { item.destroy(); this.score += 30; this.updateScoreDisplay(); }
     hitBadItem(player, item) { item.destroy(); this.score = Math.max(0, this.score - 5); this.updateScoreDisplay(); this.loseLife(); }
+    
     collectPowerup(player, item) {
         const key = item.texture.key;
         item.destroy();
-        if (key === 'erikli' && this.lives < 3) { this.lives++; this.updateLivesDisplay(); }
+
+        if (key === 'erikli' && this.lives < 3) {
+            this.lives++;
+            this.updateLivesDisplay();
+        } else if (key === 'xpress') {
+            // XPRESS GÜÇLENDİRMESİ
+            this.playerSpeed = 1000; // Hızı artır
+            this.time.delayedCall(5000, () => { this.playerSpeed = 600; }, [], this); // 5 saniye sonra normale döndür
+        } else if (key === 'kitkat') {
+            // KITKAT GÜÇLENDİRMESİ
+            this.physics.world.timeScale = 0.5; // Her şeyi yavaşlat
+            this.time.delayedCall(3000, () => { this.physics.world.timeScale = 1; }, [], this); // 3 saniye sonra normale döndür
+        }
     }
     
     loseLife() {
@@ -171,12 +191,11 @@ class GameScene extends Phaser.Scene {
         this.physics.pause();
         this.gameTimer.destroy();
         this.bonusTimer.destroy();
-        if(this.player) this.player.setTint(0xff0000);
+        if(this.player) this.player.setTint(0xff0000).setVelocityX(0);
         this.handleGameOver(this.score);
     }
 }
 
-// Bu fonksiyon dışarıdan çağrılacak ana fonksiyon
 export function createGame(handleGameOver) {
     const config = {
         type: Phaser.AUTO,
@@ -187,7 +206,7 @@ export function createGame(handleGameOver) {
             width: 800,
             height: 600
         },
-        scene: [GameScene], // Sahnemizi burada belirtiyoruz
+        scene: [GameScene],
         physics: {
             default: 'arcade',
             arcade: {
@@ -201,7 +220,6 @@ export function createGame(handleGameOver) {
         window.phaserGame.destroy(true);
     }
     
-    // Oyunu başlatırken handleGameOver fonksiyonunu sahneye iletiyoruz
     window.phaserGame = new Phaser.Game(config);
     window.phaserGame.scene.start('GameScene', { handleGameOver: handleGameOver });
 }
